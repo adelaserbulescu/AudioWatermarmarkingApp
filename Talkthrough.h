@@ -37,6 +37,24 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
+extern int inputBuff1R[512][2];
+extern int inputBuff2R[512][2];
+extern int inputBuff1I[512][2];
+extern int inputBuff2I[512][2];
+
+extern int index;
+extern int *inPointerR;
+extern int *inPointerI;
+
+extern int outputBuff1R[512][2];
+extern int outputBuff2R[512][2];
+extern int outputBuff1I[512][2];
+extern int outputBuff2I[512][2];
+
+extern int *outPointerR;
+extern int *outPointerI;
+
+
 //--------------------------------------------------------------------------//
 // Prototypes																//
 //--------------------------------------------------------------------------//
@@ -53,5 +71,11 @@ void Process_Data(void);
 
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
+
+//FFT
+void FFT(short int dir, long m, int *x, int *y);
+
+//Initialize Buffer Pointers
+void initPointers();
 
 #endif //__Talkthrough_DEFINED

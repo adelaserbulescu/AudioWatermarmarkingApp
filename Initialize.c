@@ -144,6 +144,22 @@ void Init_Interrupts(void)
 	*pSIC_IMASK = 0x00000020;
 }
 
+int inputBuff1R[512][2];
+int inputBuff1I[512][2];
+int *inPointerR;
+int *inPointerI;
+int outputBuff1R[512][2];
+int outputBuff1I[512][2];
+int *outPointerR;
+int *outPointerI;
+
+void initPointers() {
+	*inPointerR = inputBuff1R;
+	*inPointerI = inputBuff1I;
+	*outPointerR = outputBuff1R;
+	*outPointerI = outputBuff1I;
+}
+
 
 	
 
