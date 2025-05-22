@@ -67,7 +67,6 @@ void main(void)
 	Init_DMA();
 	Init_Interrupts();
 	Enable_DMA_Sport0();
-	initPointers();
 
 	while(1);
 }

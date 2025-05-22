@@ -37,22 +37,27 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
-extern int inputBuff1R[512][2];
-extern int inputBuff2R[512][2];
-extern int inputBuff1I[512][2];
-extern int inputBuff2I[512][2];
+extern int *inBuffer1LeftR;
+extern int *inBuffer1LeftI;
+extern int *inBuffer2LeftR;
+extern int *inBuffer2LeftI;
+
+extern int *inBuffer1RightR;
+extern int *inBuffer1RightI;
+extern int *inBuffer2RightR;
+extern int *inBuffer2RightI;
+
+extern int *outBuffer1LeftR;
+extern int *outBuffer1LeftI;
+extern int *outBuffer2LeftR;
+extern int *outBuffer2LeftI;
+
+extern int *outBuffer1RightR;
+extern int *outBuffer1RightI;
+extern int *outBuffer2RightR;
+extern int *outBuffer2RightI;
 
 extern int index;
-extern int *inPointerR;
-extern int *inPointerI;
-
-extern int outputBuff1R[512][2];
-extern int outputBuff2R[512][2];
-extern int outputBuff1I[512][2];
-extern int outputBuff2I[512][2];
-
-extern int *outPointerR;
-extern int *outPointerI;
 
 
 //--------------------------------------------------------------------------//
