@@ -50,6 +50,8 @@ int iTxBuffer1[2];
 // SPORT0 DMA receive buffer
 int iRxBuffer1[2];
 
+int flag;
+
 
 //--------------------------------------------------------------------------//
 // Function:	main														//
@@ -67,7 +69,56 @@ void main(void)
 	Init_DMA();
 	Init_Interrupts();
 	Enable_DMA_Sport0();
-	initPointers();
+	initBuffers();
 
-	while(1);
+	/*inLeftR = inBuffer1LeftR;
+	inLeftI = inBuffer1LeftI;
+	inRightR = inBuffer1RightR;
+	inRightI = inBuffer1RightI;
+
+	outLeftR = outBuffer1LeftR;
+	outLeftI = outBuffer1LeftI;
+	outRightR = outBuffer1RightR;
+	outRightI = outBuffer1RightI;*/
+
+	flag = 1;
+
+	while(1){
+		if(index == 511) {
+			if(flag == 1) {
+				inLeftR = inBuffer1LeftR;
+				inLeftI = inBuffer1LeftI;
+				inRightR = inBuffer1RightR;
+				inRightI = inBuffer1RightI;
+
+				outLeftR = outBuffer1LeftR;
+				outLeftI = outBuffer1LeftI;
+				outRightR = outBuffer1RightR;
+				outRightI = outBuffer1RightI;
+			}
+
+			else {
+				inLeftR = inBuffer2LeftR;
+				inLeftI = inBuffer2LeftI;
+				inRightR = inBuffer2RightR;
+				inRightI = inBuffer2RightI;
+
+				outLeftR = outBuffer2LeftR;
+				outLeftI = outBuffer2LeftI;
+				outRightR = outBuffer2RightR;
+				outRightI = outBuffer2RightI;
+			}
+
+			FFT(1, 9, inLeftR, inLeftI);
+			FFT(1, 9, inRightR, inRightI);
+			outLeftR = inLeftR;
+			outLeftI = inLeftI;
+			outRightR = inRightR;
+			outRightI = inRightI;
+			FFT(0, 9, outLeftR, outLeftI);
+			FFT(0, 9, outRightR, outRightI);
+
+			flag = -flag;
+		}
+	}
 }

@@ -48,13 +48,13 @@ void Audio_Reset(void)
 // Function:	Init_Sport0													//
 //																			//
 // Description:	Configure Sport0 for I2S mode, to transmit/receive data 	//
-//				to/from the ADC/DAC.Configure Sport for external clocks and //
+//				to/from the ADC/DAC.Configure Sport for al clocks and //
 //				frame syncs.												//
 //--------------------------------------------------------------------------//
 void Init_Sport0(void)
 {
 	// Sport0 receive configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync	
 //	*pSPORT0_RCR1 = RFSR | LRFS | RCKFE | IRFS | IRCLK;
@@ -64,7 +64,7 @@ void Init_Sport0(void)
 //	*pSPORT0_RFSDIV = 0x001F;
 	
 	// Sport0 transmit configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync
 //	*pSPORT0_TCR1 = TFSR | LTFS | TCKFE | ITFS | ITCLK;
@@ -144,20 +144,67 @@ void Init_Interrupts(void)
 	*pSIC_IMASK = 0x00000020;
 }
 
-int inputBuff1R[512][2];
-int inputBuff1I[512][2];
-int *inPointerR;
-int *inPointerI;
-int outputBuff1R[512][2];
-int outputBuff1I[512][2];
-int *outPointerR;
-int *outPointerI;
+int *inBuffer1LeftR;
+int *inBuffer1LeftI;
+int *inBuffer2LeftR;
+int *inBuffer2LeftI;
 
-void initPointers() {
-	*inPointerR = inputBuff1R;
-	*inPointerI = inputBuff1I;
-	*outPointerR = outputBuff1R;
-	*outPointerI = outputBuff1I;
+int *inBuffer1RightR;
+int *inBuffer1RightI;
+int *inBuffer2RightR;
+int *inBuffer2RightI;
+
+int *outBuffer1LeftR;
+int *outBuffer1LeftI;
+int *outBuffer2LeftR;
+int *outBuffer2LeftI;
+
+int *outBuffer1RightR;
+int *outBuffer1RightI;
+int *outBuffer2RightR;
+int *outBuffer2RightI;
+
+int *inLeftR;
+int *inLeftI;
+int *inRightR;
+int *inRightI;
+int *outLeftR;
+int *outLeftI;
+int *outRightR;
+int *outRightI;
+
+void initBuffers() {
+	inLeftR = (int *)malloc(512 * sizeof(int));
+	inLeftI = (int *)malloc(512 * sizeof(int));
+	inRightR = (int *)malloc(512 * sizeof(int));
+	inRightI = (int *)malloc(512 * sizeof(int));
+
+	outLeftR = (int *)malloc(512 * sizeof(int));
+	outLeftI = (int *)malloc(512 * sizeof(int));
+	outRightR = (int *)malloc(512 * sizeof(int));
+	outRightI = (int *)malloc(512 * sizeof(int));
+
+	inBuffer1LeftR = (int *)malloc(512 * sizeof(int));
+	inBuffer1LeftI = (int *)malloc(512 * sizeof(int));
+	inBuffer2LeftR = (int *)malloc(512 * sizeof(int));
+	inBuffer2LeftI = (int *)malloc(512 * sizeof(int));
+
+	inBuffer1RightR = (int *)malloc(512 * sizeof(int));
+	inBuffer1RightI = (int *)malloc(512 * sizeof(int));
+	inBuffer2RightR = (int *)malloc(512 * sizeof(int));
+	inBuffer2RightI = (int *)malloc(512 * sizeof(int));
+
+	outBuffer1LeftR = (int *)malloc(512 * sizeof(int));
+	outBuffer1LeftI = (int *)malloc(512 * sizeof(int));
+	outBuffer2LeftR = (int *)malloc(512 * sizeof(int));
+	outBuffer2LeftI = (int *)malloc(512 * sizeof(int));
+
+	outBuffer1RightR = (int *)malloc(512 * sizeof(int));
+	outBuffer1RightI = (int *)malloc(512 * sizeof(int));
+	outBuffer2RightR = (int *)malloc(512 * sizeof(int));
+	outBuffer2RightI = (int *)malloc(512 * sizeof(int));
+
+
 }
 
 
