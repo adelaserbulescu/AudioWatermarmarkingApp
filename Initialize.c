@@ -144,7 +144,47 @@ void Init_Interrupts(void)
 	*pSIC_IMASK = 0x00000020;
 }
 
+int *inBuffer1LeftR;
+int *inBuffer1LeftI;
+int *inBuffer2LeftR;
+int *inBuffer2LeftI;
 
+int *inBuffer1RightR;
+int *inBuffer1RightI;
+int *inBuffer2RightR;
+int *inBuffer2RightI;
+
+int *outBuffer1LeftR;
+int *outBuffer1LeftI;
+int *outBuffer2LeftR;
+int *outBuffer2LeftI;
+
+int *outBuffer1RightR;
+int *outBuffer1RightI;
+int *outBuffer2RightR;
+int *outBuffer2RightI;
+
+void initBuffers() {
+	inBuffer1LeftR = (int *)malloc(512 * sizeof(int));
+	inBuffer1LeftI = (int *)malloc(512 * sizeof(int));
+	inBuffer2LeftR = (int *)malloc(512 * sizeof(int));
+	inBuffer2LeftI = (int *)malloc(512 * sizeof(int));
+
+	inBuffer1RightR = (int *)malloc(512 * sizeof(int));
+	inBuffer1RightI = (int *)malloc(512 * sizeof(int));
+	inBuffer2RightR = (int *)malloc(512 * sizeof(int));
+	inBuffer2RightI = (int *)malloc(512 * sizeof(int));
+
+	outBuffer1LeftR = (int *)malloc(512 * sizeof(int));
+	outBuffer1LeftI = (int *)malloc(512 * sizeof(int));
+	outBuffer2LeftR = (int *)malloc(512 * sizeof(int));
+	outBuffer2LeftI = (int *)malloc(512 * sizeof(int));
+
+	outBuffer1RightR = (int *)malloc(512 * sizeof(int));
+	outBuffer1RightI = (int *)malloc(512 * sizeof(int));
+	outBuffer2RightR = (int *)malloc(512 * sizeof(int));
+	outBuffer2RightI = (int *)malloc(512 * sizeof(int));
+}
 
 	
 
