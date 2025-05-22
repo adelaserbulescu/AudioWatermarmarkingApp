@@ -13,47 +13,65 @@
 //				respectively.												//
 //--------------------------------------------------------------------------//
 
-int inputBuff1R[512][2];
-int inputBuff2R[512][2];
-int inputBuff1I[512][2];
-int inputBuff2I[512][2];
+int *inBuffer1LeftR;
+int *inBuffer1LeftI;
+int *inBuffer2LeftR;
+int *inBuffer2LeftI;
+
+int *inBuffer1RightR;
+int *inBuffer1RightI;
+int *inBuffer2RightR;
+int *inBuffer2RightI;
+
+int *outBuffer1LeftR;
+int *outBuffer1LeftI;
+int *outBuffer2LeftR;
+int *outBuffer2LeftI;
+
+int *outBuffer1RightR;
+int *outBuffer1RightI;
+int *outBuffer2RightR;
+int *outBuffer2RightI;
 
 int index;
-int *inPointerR;
-int *inPointerI;
 
-int outputBuff1R[512][2];
-int outputBuff2R[512][2];
-int outputBuff1I[512][2];
-int outputBuff2I[512][2];
+void swap(int *a, int *b) {
+  int *temp;
+  temp = a;
+  a = b;
+  b = temp;
+}
 
-int *outPointerR;
-int *outPointerI;
-
-void switchBuffs(int *p, int a[512][], int b[512][]) {
-  if(*p == a[511][1]) {
-	  *p = b;
-  }
-  else *p = a;
+void switchBuffs() {
+	swap(inBuffer1LeftR, inBuffer2LeftR);
+	swap(inBuffer1LeftI, inBuffer2LeftI);
+	swap(inBuffer1RightR, inBuffer2RightR);
+	swap(inBuffer1RightI, inBuffer2RightI);
+	swap(outBuffer1LeftR, outBuffer2LeftR);
+	swap(outBuffer1LeftI, outBuffer2LeftI);
+	swap(outBuffer1RightR, outBuffer2RightR);
+	swap(outBuffer1RightI, outBuffer2RightI);
 }
 
 void Process_Data(void)
 {
 
-	&inPointerR = ((iChannel0LeftIn<<8)>>0)>>8;
-	inPointerR++;
-	&inPointerR = ((iChannel0RightIn<<8)>>0)>>8;
+	inBuffer1LeftR[index] = ((iChannel0LeftIn<<8)>>0)>>8;
+	inBuffer1RightR[index] = ((iChannel0RightIn<<8)>>0)>>8;
 	index = (index + 1) % 512;
 
-	//FFT(1,9, *);
-
 	if(index == 511) {
-		switchBuffs(inPointerR, inputBuff1R, inputBuff2R);
-		switchBuffs(inPointerI, inputBuff1I, inputBuff2I);
-		switchBuffs(outPointerR, outputBuff1R, outputBuff2R);
-		switchBuffs(outPointerI, outputBuff1I, outputBuff2I);
+		switchBuffs();
+		fft(1, 9, inBuffer2LeftR, inBuffer2LeftI);
+		fft(1, 9, inBuffer2RightR, inBuffer2RightI);
+		outBuffer2LeftR = inBuffer2LeftR;
+		outBuffer2LeftI = inBuffer2LeftI;
+		outBuffer2RightR = inBuffer2RightR;
+		outBuffer2RightI = inBuffer2RightI;
+		fft(0, 9, outBuffer2LeftR, outBuffer2LeftI);
+		fft(0, 9, outBuffer2RightR, outBuffer2RightI);
 	}
 
-	iChannel0LeftOut = ((iChannel0LeftIn<<8)>>0)>>8;
-	iChannel0RightOut = ((iChannel0RightIn<<8)>>0)>>8;
+	iChannel0LeftOut = ((outBuffer1LeftR<<8)>>0)>>8;
+	iChannel0RightOut = ((outBuffer1RightR<<8)>>0)>>8;
 }
