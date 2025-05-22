@@ -58,20 +58,21 @@ void Process_Data(void)
 
 	inBuffer1LeftR[index] = ((iChannel0LeftIn<<8)>>0)>>8;
 	inBuffer1RightR[index] = ((iChannel0RightIn<<8)>>0)>>8;
-	index = (index + 1) % 512;
 
 	if(index == 511) {
 		switchBuffs();
 		fft(1, 9, inBuffer2LeftR, inBuffer2LeftI);
 		fft(1, 9, inBuffer2RightR, inBuffer2RightI);
-		outBuffer2LeftR = inBuffer2LeftR;
-		outBuffer2LeftI = inBuffer2LeftI;
-		outBuffer2RightR = inBuffer2RightR;
-		outBuffer2RightI = inBuffer2RightI;
+		memcpy(outBuffer2LeftR, inBuffer2LeftR, 512 * sizeof(int));
+		memcpy(outBuffer2LeftI, inBuffer2LeftI, 512 * sizeof(int));
+		memcpy(outBuffer2RightR, inBuffer2RightR, 512 * sizeof(int));
+		memcpy(outBuffer2RightI, inBuffer2RightI, 512 * sizeof(int));
 		fft(0, 9, outBuffer2LeftR, outBuffer2LeftI);
 		fft(0, 9, outBuffer2RightR, outBuffer2RightI);
 	}
 
-	iChannel0LeftOut = ((outBuffer1LeftR<<8)>>0)>>8;
-	iChannel0RightOut = ((outBuffer1RightR<<8)>>0)>>8;
+	iChannel0LeftOut = ((outBuffer2LeftR[index]<<8)>>0)>>8;
+	iChannel0RightOut = ((outBuffer2RightR[index]<<8)>>0)>>8;
+
+	index = (index + 1) % 512;
 }
