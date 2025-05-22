@@ -1,5 +1,5 @@
 #include "Talkthrough.h"
-
+#include <math.h>
 void FFT(short int dir, long m, int *x, int *y)
 {
 	int n, i, i1, j, k, i2, l, l1, l2;
