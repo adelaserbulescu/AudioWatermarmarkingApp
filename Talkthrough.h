@@ -6,6 +6,7 @@
 //--------------------------------------------------------------------------//
 #include <sys\exception.h>
 #include <cdefBF537.h>
+#include <stdio.h>
 
 //--------------------------------------------------------------------------//
 // Symbolic constants														//
@@ -37,22 +38,41 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
-extern int inputBuff1R[512][2];
-extern int inputBuff2R[512][2];
-extern int inputBuff1I[512][2];
-extern int inputBuff2I[512][2];
+extern int Buffer1LeftR[512];
+extern int Buffer1LeftI[512];
+extern int Buffer2LeftR[512];
+extern int Buffer2LeftI[512];
+
+extern int Buffer1RightR[512];
+extern int Buffer1RightI[512];
+extern int Buffer2RightR[512];
+extern int Buffer2RightI[512];
+
+extern int *inLeftR;
+extern int *inLeftI;
+extern int *inRightR;
+extern int *inRightI;
+extern int *procLeftR;
+extern int *procLeftI;
+extern int *procRightR;
+extern int *procRightI;
+
+extern int outLeft1[512];
+extern int outLeft2[512];
+extern int outRight1[512];
+extern int outRight2[512];
+extern int *outLeft;
+extern int *outRight;
+extern int *procOutLeft;
+extern int *procOutRight;
 
 extern int index;
-extern int *inPointerR;
-extern int *inPointerI;
+extern int flag;
 
-extern int outputBuff1R[512][2];
-extern int outputBuff2R[512][2];
-extern int outputBuff1I[512][2];
-extern int outputBuff2I[512][2];
-
-extern int *outPointerR;
-extern int *outPointerI;
+//extern int alpha;
+//extern int current_wave_sample;
+//extern int val;
+extern FILE *wave;
 
 
 //--------------------------------------------------------------------------//
@@ -76,6 +96,10 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
 void FFT(short int dir, long m, int *x, int *y);
 
 //Initialize Buffer Pointers
-void initPointers();
+void initBuffers(void);
+
+void codeMessage(void);
+
+void fsk(int f1, int f2, int res);
 
 #endif //__Talkthrough_DEFINED
