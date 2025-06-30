@@ -50,7 +50,47 @@ int iTxBuffer1[2];
 // SPORT0 DMA receive buffer
 int iRxBuffer1[2];
 
+int flag;
 
+int Buffer1LeftR[512];
+int Buffer1LeftI[512];
+int Buffer2LeftR[512];
+int Buffer2LeftI[512];
+
+int Buffer1RightR[512];
+int Buffer1RightI[512];
+int Buffer2RightR[512];
+int Buffer2RightI[512];
+
+int *inLeftR;
+int *inLeftI;
+int *inRightR;
+int *inRightI;
+int *procLeftR;
+int *procLeftI;
+int *procRightR;
+int *procRightI;
+
+int outLeft1[512];
+int outLeft2[512];
+int outRight1[512];
+int outRight2[512];
+int *outLeft;
+int *outRight;
+int *procOutLeft;
+int *procOutRight;
+
+//int alpha;
+
+void copy(void)
+{
+	for(int i = 0; i < 512; i++){
+		procOutLeft[i] = procLeftR[i];
+		procOutRight[i] = procRightR[i];
+	}
+
+	return;
+}
 //--------------------------------------------------------------------------//
 // Function:	main														//
 //																			//
@@ -67,7 +107,67 @@ void main(void)
 	Init_DMA();
 	Init_Interrupts();
 	Enable_DMA_Sport0();
-	initPointers();
+	codeMessage();
+	fsk(50, 2000, 32);
+	//alpha = 0.001;
+	//wave = fopen("wave.txt", "r");
+	/*if(!wave) {
+		exit(1);
+	}*/
 
-	while(1);
+	procLeftR = inLeftR = Buffer1LeftR;
+	procLeftI = inLeftI = Buffer1LeftI;
+	procRightR = inRightR = Buffer1RightR;
+	procRightI = inRightI = Buffer1RightI;
+	outLeft = outLeft1;
+	outRight = outRight1;
+
+
+	flag = 1;
+
+	while(1){
+		if(index == 511) {
+			if(flag == 1) {
+				inLeftR = Buffer1LeftR;
+				inLeftI = Buffer1LeftI;
+				inRightR = Buffer1RightR;
+				inRightI = Buffer1RightI;
+
+				procLeftR = Buffer2LeftR;
+				procLeftI = Buffer2LeftI;
+				procRightR = Buffer2RightR;
+				procRightI = Buffer2RightI;
+
+				outLeft = outLeft1;
+				outRight = outRight1;
+				procOutLeft = outLeft2;
+				procOutRight = outRight2;
+			}
+
+			else {
+				inLeftR = Buffer2LeftR;
+				inLeftI = Buffer2LeftI;
+				inRightR = Buffer2RightR;
+				inRightI = Buffer2RightI;
+
+				procLeftR = Buffer1LeftR;
+				procLeftI = Buffer1LeftI;
+				procRightR = Buffer1RightR;
+				procRightI = Buffer1RightI;
+
+				outLeft = outLeft2;
+				outRight = outRight2;
+				procOutLeft = outLeft1;
+				procOutRight = outRight1;
+			}
+
+			FFT(1, 1, procLeftR, procLeftI);
+			FFT(1, 1, procRightR, procRightI);
+			FFT(-1, 1, procLeftR, procLeftI);
+			FFT(-1, 1, procRightR, procRightI);
+
+			copy();
+			flag = -flag;
+		}
+	}
 }
