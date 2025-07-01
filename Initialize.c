@@ -1,4 +1,5 @@
 #include "Talkthrough.h"
+#include <string.h>
 
 /*****************************************************************************
  Function:	Init_Flags													
@@ -48,13 +49,13 @@ void Audio_Reset(void)
 // Function:	Init_Sport0													//
 //																			//
 // Description:	Configure Sport0 for I2S mode, to transmit/receive data 	//
-//				to/from the ADC/DAC.Configure Sport for external clocks and //
+//				to/from the ADC/DAC.Configure Sport for al clocks and //
 //				frame syncs.												//
 //--------------------------------------------------------------------------//
 void Init_Sport0(void)
 {
 	// Sport0 receive configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync	
 //	*pSPORT0_RCR1 = RFSR | LRFS | RCKFE | IRFS | IRCLK;
@@ -64,7 +65,7 @@ void Init_Sport0(void)
 //	*pSPORT0_RFSDIV = 0x001F;
 	
 	// Sport0 transmit configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync
 //	*pSPORT0_TCR1 = TFSR | LTFS | TCKFE | ITFS | ITCLK;
@@ -144,21 +145,28 @@ void Init_Interrupts(void)
 	*pSIC_IMASK = 0x00000020;
 }
 
-int inputBuff1R[512][2];
-int inputBuff1I[512][2];
-int *inPointerR;
-int *inPointerI;
-int outputBuff1R[512][2];
-int outputBuff1I[512][2];
-int *outPointerR;
-int *outPointerI;
+char text[1024];
+int len;
 
-void initPointers() {
-	*inPointerR = inputBuff1R;
-	*inPointerI = inputBuff1I;
-	*outPointerR = outputBuff1R;
-	*outPointerI = outputBuff1I;
+void getText(void)
+{
+	strcpy(text, "dsplabs");
+	len = strlen(text);
 }
+
+char ch;
+
+void procFirstCh(void)
+{
+	ch = text[0];
+	encodeMessage();
+	fsk(50, 2000);
+
+}
+
+
+
+
 
 
 	
