@@ -29,6 +29,18 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 
 }
 
+volatile int8_t temp;
+EX_INTERRUPT_HANDLER(ISR_UART)
+{
+
+	if(*pUART1_LSR & DR)
+	{
+		temp = *pUART1_RBR;
+		coefRX(temp);
+		// //debug led
+	}
+}
+
 	
 
 

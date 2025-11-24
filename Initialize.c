@@ -1,4 +1,5 @@
 #include "Talkthrough.h"
+#include <string.h>
 
 /*****************************************************************************
  Function:	Init_Flags													
@@ -15,9 +16,12 @@ void Init_Flags(void)
 	temp++;
     *pPORTF_FER = 0x0000;
     *pPORTF_FER = 0x0000;
+    *pPORTF_FER &= ~(1<<6); //debug led
+    *pPORTF_FER |= (1 << 2) | (1 << 3); // PF2 & PF3 for UART1 RX/TX
 
     // set PORTF direction register
     *pPORTFIO_DIR = 0x1FC0;
+    *pPORTFIO_DIR |= (1<<6); //debug led
         
    	// set PORTF input enable register
     *pPORTFIO_INEN = 0x003C;
@@ -48,13 +52,13 @@ void Audio_Reset(void)
 // Function:	Init_Sport0													//
 //																			//
 // Description:	Configure Sport0 for I2S mode, to transmit/receive data 	//
-//				to/from the ADC/DAC.Configure Sport for external clocks and //
+//				to/from the ADC/DAC.Configure Sport for al clocks and //
 //				frame syncs.												//
 //--------------------------------------------------------------------------//
 void Init_Sport0(void)
 {
 	// Sport0 receive configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync	
 //	*pSPORT0_RCR1 = RFSR | LRFS | RCKFE | IRFS | IRCLK;
@@ -64,7 +68,7 @@ void Init_Sport0(void)
 //	*pSPORT0_RFSDIV = 0x001F;
 	
 	// Sport0 transmit configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync
 //	*pSPORT0_TCR1 = TFSR | LTFS | TCKFE | ITFS | ITCLK;
@@ -132,33 +136,70 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
-	*pSIC_IAR1 = 0xffffffff;
+	*pSIC_IAR1 = 0xff3fffff; // Set UART1 RX interrupt priority to 3
 	*pSIC_IAR2 = 0xffffffff;
 	*pSIC_IAR3 = 0xffffffff;
 
 	// assign ISRs to interrupt vectors
 	// Sport0 RX ISR -> IVG 9
+	//UART1 RX ISR -> IVG10
 	register_handler(ik_ivg9, Sport0_RX_ISR);
+	register_handler(ik_ivg10, ISR_UART);
 
 	// enable Sport0 RX interrupt
-	*pSIC_IMASK = 0x00000020;
+	*pSIC_IMASK = 0x00002020;
 }
 
-int inputBuff1R[512][2];
-int inputBuff1I[512][2];
-int *inPointerR;
-int *inPointerI;
-int outputBuff1R[512][2];
-int outputBuff1I[512][2];
-int *outPointerR;
-int *outPointerI;
+char text[50];
+int len;
+int textByteSize;
 
-void initPointers() {
-	*inPointerR = inputBuff1R;
-	*inPointerI = inputBuff1I;
-	*outPointerR = outputBuff1R;
-	*outPointerI = outputBuff1I;
+void getText(void)
+{
+	memcpy(text, rx_buffer, sizeof(rx_buffer));
+	len = strlen(text);
+	textByteSize = len * 8;
+
 }
+
+
+void procFirstTwoChars(void)
+{
+	strncpy(proc_string, text, 2);
+	encodeMessage();
+	fsk(50, 2000);
+
+}
+
+int tx_buffer[401];
+void initUART(void)
+{
+	*pUART1_GCTL = UCEN;
+	*pUART1_LCR = DLAB;
+	*pUART1_DLH = 0x0000;
+	*pUART1_DLL = 0x0051;
+	*pUART1_LCR = 0x0000;
+	*pUART1_LCR = 0x0003;
+	*pUART1_IER = ERBFI;
+
+	// setup DMA for UART tx
+	*pDMA9_START_ADDR = (void*)tx_buffer;
+	*pDMA9_X_COUNT = 401;
+	*pDMA9_X_MODIFY = 1;
+	*pDMA9_CONFIG = 0;
+}
+
+/*void startRpiScript(void)
+{
+	if((*pDMA9_IRQ_STATUS & DMA_RUN) == 0) {
+		tx_buffer[0] = 1;
+		*pDMA9_CONFIG = DMAEN | FLOW_STOP;
+	}
+}*/
+
+
+
+
 
 
 	
