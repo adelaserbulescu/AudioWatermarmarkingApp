@@ -135,7 +135,7 @@ void main(void)
 	initUART();
 	//startRpiScript();
 	//getText();
-	alpha = 0.5;
+	alpha = 0.2;
 
 
 	procLeftR = inLeftR = Buffer1LeftR;
@@ -210,10 +210,10 @@ void main(void)
 				proc_enc = enc1;
 			}
 
-			if(!data) {
+			/*if(!data) {
 				fillTXAndSend();
 			}
-			else {
+			else {*/
 				text_index = (text_index + 1) % len;
 	            memcpy(proc_string, text + 2 * text_index, 2);}
 			    encodeMessage();
@@ -227,7 +227,7 @@ void main(void)
 			    if(text_index == len - 1)
 			       data = 0;
 
-		}
+		//}
 
 	}
 }

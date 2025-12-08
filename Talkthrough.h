@@ -115,7 +115,9 @@ void Process_Data(void);
 
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
-EX_INTERRUPT_HANDLER(ISR_UART);
+EX_INTERRUPT_HANDLER(UART1_RX_ISR);
+EX_INTERRUPT_HANDLER(UART1_TX_ISR);
+
 
 //FFT
 void FFT(short int dir, long m, int *x, int *y);

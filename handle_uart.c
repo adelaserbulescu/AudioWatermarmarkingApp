@@ -13,13 +13,14 @@ void coefRX(int8_t temp)
 	    		state = 1;
 	    	break;
 	    case 1:
-	    	rx_buffer[j++]=temp;
+	    	rx_buffer[j]=temp;
 	    	if(rx_buffer[j] == '\n') {
 	    		data=1;
 	    		state=0;
 	    		j=0;
 	    		getText();
 	    	}
+	    	j = (j + 1) % sizeof(rx_buffer);
 	    	break;
 	}
 }
@@ -29,7 +30,7 @@ void fillTXAndSend(void)
 {
 	int i;
 
-	if((*pDMA9_IRQ_STATUS & DMA_RUN) == 0)
+	if((*pDMA9_IRQ_STATUS & DMA_RUN) == 0 && data)
 	{
 		step++;
 		if(step==10)
@@ -44,6 +45,7 @@ void fillTXAndSend(void)
 
 			*pDMA9_CONFIG = DMAEN | FLOW_STOP;
 			step=0;
+			data=0;
 		}
 	}
 }

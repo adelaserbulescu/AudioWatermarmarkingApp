@@ -30,7 +30,7 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 }
 
 volatile int8_t temp;
-EX_INTERRUPT_HANDLER(ISR_UART)
+EX_INTERRUPT_HANDLER(UART1_RX_ISR)
 {
 
 	if(*pUART1_LSR & DR)
@@ -39,8 +39,15 @@ EX_INTERRUPT_HANDLER(ISR_UART)
 		coefRX(temp);
 		// //debug led
 	}
+
+
 }
 
+EX_INTERRUPT_HANDLER(UART1_TX_ISR) {
+	if(*pUART1_LSR & THRE) {
+				fillTXAndSend();
+		}
+}
 	
 
 

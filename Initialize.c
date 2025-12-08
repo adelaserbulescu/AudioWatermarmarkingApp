@@ -136,7 +136,7 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
-	*pSIC_IAR1 = 0xff3fffff; // Set UART1 RX interrupt priority to 3
+	*pSIC_IAR1 = 0xf43fffff; // Set UART1 RX interrupt priority to 3
 	*pSIC_IAR2 = 0xffffffff;
 	*pSIC_IAR3 = 0xffffffff;
 
@@ -144,10 +144,11 @@ void Init_Interrupts(void)
 	// Sport0 RX ISR -> IVG 9
 	//UART1 RX ISR -> IVG10
 	register_handler(ik_ivg9, Sport0_RX_ISR);
-	register_handler(ik_ivg10, ISR_UART);
+	register_handler(ik_ivg10, UART1_RX_ISR);
+	register_handler(ik_ivg10, UART1_TX_ISR);
 
 	// enable Sport0 RX interrupt
-	*pSIC_IMASK = 0x00002020;
+	*pSIC_IMASK = 0x00003020;
 }
 
 char text[50];
@@ -180,13 +181,14 @@ void initUART(void)
 	*pUART1_DLL = 0x0051;
 	*pUART1_LCR = 0x0000;
 	*pUART1_LCR = 0x0003;
-	*pUART1_IER = ERBFI;
+	*pUART1_IER = ERBFI | ETBEI;
 
 	// setup DMA for UART tx
 	*pDMA9_START_ADDR = (void*)tx_buffer;
 	*pDMA9_X_COUNT = 401;
 	*pDMA9_X_MODIFY = 1;
 	*pDMA9_CONFIG = 0;
+	//*pDMA9_CONFIG = DMAEN | FLOW_STOP;
 }
 
 /*void startRpiScript(void)
