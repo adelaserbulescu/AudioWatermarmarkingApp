@@ -29,6 +29,29 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 
 }
 
+volatile uint8_t temp;
+EX_INTERRUPT_HANDLER(UART1_ISR)
+{
+
+	if(*pUART1_LSR & DR)
+	{
+		temp = *pUART1_RBR;
+		coefRX(temp);
+
+		// //debug led
+	}
+	if ((*pUART1_LSR & THRE) && (*pUART1_IER & ETBEI)) {
+
+	        if (tx_index < tx_len) {
+	            *pUART1_THR = tx_buffer[tx_index++];
+	        } else {
+	            *pUART1_IER &= ~ETBEI;  // stop TX interrupt
+	        }
+	    }
+
+
+}
+
 	
 
 

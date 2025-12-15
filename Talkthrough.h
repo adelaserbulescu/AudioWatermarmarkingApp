@@ -89,6 +89,16 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
+extern uint8_t step;
+extern uint8_t tx_buffer[401];
+extern uint8_t rx_buffer[50];
+extern volatile uint8_t temp;
+extern volatile uint8_t state;
+extern volatile uint8_t j;
+extern volatile uint8_t data;
+extern volatile uint8_t tx_index;
+extern volatile int tx_len;
+extern volatile int size_enc;
 
 
 //--------------------------------------------------------------------------//
@@ -107,6 +117,8 @@ void Process_Data(void);
 
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
+EX_INTERRUPT_HANDLER(UART1_ISR);
+
 
 //FFT
 void FFT(short int dir, long m, int *x, int *y);
@@ -121,5 +133,15 @@ void procFirstTwoChars(void);
 void encodeMessage(void);
 
 void fsk(int f1, int f2);
+
+void initUART(void);
+
+void coefRX(uint8_t temp);
+
+void fillTXAndSend(void);
+
+//void startRpiScript(void);
+
+//void sendFinishSignal(void);
 
 #endif //__Talkthrough_DEFINED

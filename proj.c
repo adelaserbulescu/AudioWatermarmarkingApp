@@ -97,7 +97,7 @@ int *proc_fsk_samples;
 int fsk_samples1[512];
 int fsk_samples2[512];
 
-int string_flag;
+
 
 
 
@@ -132,8 +132,10 @@ void main(void)
 	Init_DMA();
 	Init_Interrupts();
 	Enable_DMA_Sport0();
-	getText();
-	alpha = 0.0001;
+	initUART();
+	//startRpiScript();
+	//getText();
+	alpha = 0.2;
 
 
 	procLeftR = inLeftR = Buffer1LeftR;
@@ -207,16 +209,27 @@ void main(void)
 				proc_string = string1;
 				proc_enc = enc1;
 			}
-			text_index = (text_index + 1) % len;
-			strncpy(proc_string, text + 2 * text_index, 2);
-			encodeMessage();
-			fsk(50, 2000);
-			FFT(1, 1, procLeftR, procLeftI);
-			FFT(1, 1, procRightR, procRightI);
-			FFT(-1, 1, procLeftR, procLeftI);
-			FFT(-1, 1, procRightR, procRightI);
-			copy();
-			flag = -flag;
+
+			if(data) {
+				fillTXAndSend();
+
+			}
+			else {
+				text_index = (text_index + 1) % len;
+	            memcpy(proc_string, text + 2 * text_index, 2);}
+			    encodeMessage();
+			    fsk(50, 1000);
+			    FFT(1, 1, procLeftR, procLeftI);
+			    FFT(1, 1, procRightR, procRightI);
+			    FFT(-1, 1, procLeftR, procLeftI);
+			    FFT(-1, 1, procRightR, procRightI);
+			    copy();
+			    flag = -flag;
+			    if(text_index == len - 1) {
+			       size_enc = 0;
+			       data = 0;
+			    }
+
 		}
 
 	}
