@@ -29,6 +29,48 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 
 }
 
+
+EX_INTERRUPT_HANDLER(UART1_ISR)
+{
+
+	if(*pUART1_LSR & DR)
+	{
+		temp = *pUART1_RBR;
+
+		// //debug led
+	}
+	if ((*pUART1_LSR & THRE) && (*pUART1_IER & ETBEI)) {
+
+	        *pUART1_THR = temp;
+	    }
+
+
+}
+
+static volatile uint32_t  period;
+static volatile uint8_t   phase;
+static volatile uint8_t   done;
+EX_INTERRUPT_HANDLER(TMR6_ISR)
+{
+	if(!(*pTIMER_STATUS & TIMIL6))
+		return;
+
+	*pTIMER_DISABLE = 1 << 6;
+	*pTIMER_STATUS = TRUN6 | TOVF_ERR6 | TIMIL6;
+
+	if(!phase) {
+		period = *pTIMER6_PERIOD;
+		*pTIMER6_CONFIG  = (uint16_t)(OUT_DIS | IRQ_ENA | PERIOD_CNT | PWM_OUT);
+		*pTIMER_ENABLE = TIMEN6;
+		phase = 1;
+	}
+	else {
+		phase = 0;
+		done = 1;
+	}
+
+}
+
 	
 
 
