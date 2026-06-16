@@ -8,22 +8,37 @@ void coefRX(uint8_t temp)
 {
 	switch(state) {
 	    case 0:
-
-	    	if(temp) {
+	    	if(temp == 0xAA) {
 	    		state = 1;
-	    		*pPORTFIO_SET = (1<<5);
+	    		*pPORTFIO_TOGGLE = (1<<5);
 	    	    }
 	    	break;
 	    case 1:
-	    	rx_buffer[j]=temp;
+	    	if(temp == 0xBB) {
+	    		state = 2;
+	    	}
+	    	break;
+	    case 2:
+	    	if(temp == 0xCC) {
+	    		state = 3;
+	    	}
+	    	break;
+	    case 3:
+	    	if(temp == 0xDD) {
+	    		state = 4;
+	    	}
+	    	break;
+	    case 4:
+	    	rx_buffer[j] = temp;
 	    	if(rx_buffer[j] == '\n') {
 	    		data=1;
 	    		state=0;
 	    		j=0;
 	    		getText();
 	    	}
-	    	j = (j + 1) % sizeof(rx_buffer);
-	    	break;
+	        j = (j + 1) % sizeof(rx_buffer);
+	        break;
+
 	}
 }
 
@@ -34,7 +49,10 @@ void fillTXAndSend(void)
 {
 	uint32_t i = 0;
 
-	tx_buffer[i++] = 0xAA;                 // SYNC byte
+	tx_buffer[i++] = 0xAA;
+	tx_buffer[i++] = 0xBB;
+	tx_buffer[i++] = 0xCC;
+	tx_buffer[i++] = 0xDD;
 
 	for(uint32_t k = 0; k < size_enc && i < sizeof(tx_buffer) - 1; k++)
 	    tx_buffer[i++] = enc[k];

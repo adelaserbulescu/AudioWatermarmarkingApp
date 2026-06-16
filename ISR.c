@@ -39,6 +39,7 @@ EX_INTERRUPT_HANDLER(UART1_ISR)
 		coefRX(temp);
 
 		// //debug led
+		*pPORTFIO_TOGGLE |= (1 << 5);
 	}
 	if ((*pUART1_LSR & THRE) && (*pUART1_IER & ETBEI)) {
 

@@ -22,10 +22,10 @@ void Init_Flags(void)
 
     // set PORTF direction register
     *pPORTFIO_DIR = 0x1FC0;
-    *pPORTFIO_DIR |= (1<<6); //debug led
+    *pPORTFIO_DIR |= (1<<5); //debug led
         
    	// set PORTF input enable register
-    *pPORTFIO_INEN = 0x003C;
+    *pPORTFIO_INEN = 0x005C;
          
 	// set PORTF clear register
     *pPORTFIO_CLEAR = 0x0FC0;
@@ -188,7 +188,8 @@ void initUART(void)
     *pUART1_LCR &= ~DLAB;
 
     // Enable RX interrupt ONLY
-    *pUART1_IER = ERBFI;
+    *pUART1_IER = ERBFI | ETBEI;
+
 
     // DO NOT enable ETBEI here
 }
