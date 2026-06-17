@@ -11,7 +11,8 @@
 /* Add your custom header content here */
 
 extern volatile uint8_t state;
-extern uint8_t rx_buffer[5];
+//extern uint8_t rx_buffer[5];
+extern uint8_t tx_buffer[5];
 extern volatile uint8_t frame_state;
 
 EX_INTERRUPT_HANDLER(UART1_ISR);

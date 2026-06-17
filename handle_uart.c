@@ -3,11 +3,13 @@
 
 void fillTX(uint8_t n)
 {
-    uint8_t bytes[] = {0xAA, 0xBB, 0xCC, 0xDD, n};
-    for (int i = 0; i < sizeof(bytes); i++) {
-        while (!(*pUART1_LSR & THRE));
-        *pUART1_THR = bytes[i];
-    }
+	if((*pDMA9_IRQ_STATUS & DMA_RUN) == 0) {
+		uint8_t bytes[] = {0xAA, 0xBB, 0xCC, 0xDD, n};
+		for (int i = 0; i < sizeof(bytes); i++) {
+			tx_buffer[i] = bytes[i];
+		}
+		*pDMA9_CONFIG = DMAEN | FLOW_STOP;
+	}
 }
 
 volatile uint8_t frame_state;

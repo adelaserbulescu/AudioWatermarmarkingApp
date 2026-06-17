@@ -16,6 +16,8 @@ void init()
 	*pPORTFIO_INEN = 0x0000;
 }
 
+
+uint8_t tx_buffer[5];
 void initUART(void)
 {
     // Enable UART1
@@ -25,14 +27,19 @@ void initUART(void)
     *pUART1_LCR = DLAB;
     *pUART1_DLH = 0x02;
     *pUART1_DLL = 0x8B;
-    ssync();
+    //ssync();
     *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
-    ssync();
+    //ssync();
     *pUART1_LCR &= ~DLAB;
     *pUART1_MCR = LOOP_ENA;
-    ssync();
-    *pUART1_IER = ERBFI;
-    ssync();
+    //ssync();
+    *pUART1_IER = ERBFI | ETBEI;
+    //ssync();
+
+    *pDMA9_START_ADDR = (void*)tx_buffer;
+    *pDMA9_X_COUNT = 5;
+    *pDMA9_X_MODIFY = 1;
+    *pDMA9_CONFIG = 0;
 
 }
 
@@ -43,6 +50,7 @@ void initTIM0()
 	*pTIMER0_PERIOD = TIMER_PERIOD0;
 	*pTIMER0_WIDTH = TIMER_WIDTH0;
 
+
 }
 
 void initInterrupts()
@@ -51,13 +59,13 @@ void initInterrupts()
 	*pSIC_IAR1 = 0xff3fffff; //UART1 RX interrupt priority 3
 	*pSIC_IAR2 = 0xffff5fff; //TIM0 interrupt priority 5
 	*pSIC_IAR3 = 0xffffffff;
-	ssync();
+	//ssync();
 
 	register_handler(ik_ivg10, UART1_ISR);
 	register_handler(ik_ivg12, TIM0_ISR);
 
 	*pIMASK |= EVT_IVG10 | EVT_IVG12;
-	ssync();
+	//ssync();
 	*pSIC_IMASK = 0x00082000; //enable UART1 RX and TIM0 interrupts
-	ssync();
+	//ssync();
 }
