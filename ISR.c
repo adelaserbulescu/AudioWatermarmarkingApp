@@ -29,6 +29,27 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 
 }
 
+volatile uint8_t temp;
+EX_INTERRUPT_HANDLER(UART1_ISR)
+{
+	if(*pUART1_LSR & (OE | PE |FE | BI)) {
+			volatile uint8_t dummy = *pUART1_RBR;
+			state = 0;  // reset state machine
+			return;
+	}
+
+	if(*pUART1_LSR & DR)
+	{
+		temp = *pUART1_RBR;
+		coefRX(temp);
+
+		// //debug led
+		//*pPORTFIO_TOGGLE |= (1 << 6);
+	}
+
+
+}
+
 	
 
 

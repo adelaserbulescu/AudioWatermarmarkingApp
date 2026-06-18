@@ -37,22 +37,68 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
-extern int inputBuff1R[512][2];
-extern int inputBuff2R[512][2];
-extern int inputBuff1I[512][2];
-extern int inputBuff2I[512][2];
+extern int Buffer1LeftR[512];
+extern int Buffer1LeftI[512];
+extern int Buffer2LeftR[512];
+extern int Buffer2LeftI[512];
+
+extern int Buffer1RightR[512];
+extern int Buffer1RightI[512];
+extern int Buffer2RightR[512];
+extern int Buffer2RightI[512];
+
+extern int *inLeftR;
+extern int *inLeftI;
+extern int *inRightR;
+extern int *inRightI;
+extern int *procLeftR;
+extern int *procLeftI;
+extern int *procRightR;
+extern int *procRightI;
+
+extern int outLeft1[512];
+extern int outLeft2[512];
+extern int outRight1[512];
+extern int outRight2[512];
+extern int *outLeft;
+extern int *outRight;
+extern int *procOutLeft;
+extern int *procOutRight;
 
 extern int index;
-extern int *inPointerR;
-extern int *inPointerI;
+extern int flag;
 
-extern int outputBuff1R[512][2];
-extern int outputBuff2R[512][2];
-extern int outputBuff1I[512][2];
-extern int outputBuff2I[512][2];
+extern double alpha;
+extern char text[];
+extern int len;
 
-extern int *outPointerR;
-extern int *outPointerI;
+extern char *string;
+extern char *proc_string;
+extern char string1[2];
+extern char string2[2];
+
+extern int *enc;
+extern int *proc_enc;
+extern int enc1[16];
+extern int enc2[16];
+
+extern int *fsk_samples;
+extern int *proc_fsk_samples;
+extern int fsk_samples1[512];
+extern int fsk_samples2[512];
+
+extern int text_index;
+
+extern uint8_t step;
+extern uint8_t tx_buffer[50];
+extern uint8_t rx_buffer[50];
+extern volatile uint8_t temp;
+extern volatile uint8_t state;
+extern volatile uint8_t j;
+extern volatile uint8_t data;
+extern volatile uint8_t tx_index;
+extern volatile int tx_len;
+extern volatile int size_enc;
 
 
 //--------------------------------------------------------------------------//
@@ -71,11 +117,31 @@ void Process_Data(void);
 
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
+EX_INTERRUPT_HANDLER(UART1_ISR);
+
 
 //FFT
 void FFT(short int dir, long m, int *x, int *y);
 
 //Initialize Buffer Pointers
-void initPointers();
+void initBuffers(void);
+
+void getText(void);
+
+void procFirstTwoChars(void);
+
+void encodeMessage(void);
+
+void fsk(int f1, int f2);
+
+void initUART(void);
+
+void coefRX(uint8_t temp);
+
+void fillTXAndSend(void);
+
+//void startRpiScript(void);
+
+//void sendFinishSignal(void);
 
 #endif //__Talkthrough_DEFINED
