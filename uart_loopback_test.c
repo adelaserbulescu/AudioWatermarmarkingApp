@@ -11,10 +11,10 @@
 
 void main(void)
 {
-	void init();
-	void initUART();
-	void initTIM0();
-	void initInterrupts();
+	init();
+	initUART();
+	initTIM0();
+	initInterrupts();
 	sti(EVT_IVG10 | EVT_IVG12);
 	fillTX(1);
 	

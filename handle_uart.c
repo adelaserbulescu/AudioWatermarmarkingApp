@@ -1,15 +1,23 @@
 #include "uart_loopback_test.h"
 
-
 void fillTX(uint8_t n)
 {
-	if((*pDMA9_IRQ_STATUS & DMA_RUN) == 0) {
-		uint8_t bytes[] = {0xAA, 0xBB, 0xCC, 0xDD, n};
-		for (int i = 0; i < sizeof(bytes); i++) {
-			tx_buffer[i] = bytes[i];
-		}
-		*pDMA9_CONFIG = DMAEN | FLOW_STOP;
-	}
+	while(!(*pUART1_LSR & THRE));
+    if((*pDMA11_IRQ_STATUS & DMA_RUN) == 0) {
+        tx_buffer[0] = 0xAA;
+        tx_buffer[1] = 0xBB;
+        tx_buffer[2] = 0xCC;
+        tx_buffer[3] = 0xDD;
+        tx_buffer[4] = n;
+
+        // Reload descriptor registers before re-enabling
+        *pDMA11_START_ADDR = (void*)tx_buffer;
+        *pDMA11_X_COUNT    = 5;
+        *pDMA11_X_MODIFY   = 1;
+        ssync();
+        *pDMA11_CONFIG = DMAEN | FLOW_STOP | WDSIZE_8 | DI_EN;
+        ssync();
+    }
 }
 
 volatile uint8_t frame_state;
@@ -39,7 +47,7 @@ void readRX(uint8_t n)
 		    	break;
 		    case 4:
 		    	frame_state = 0;
-		    	*pPORTFIO_TOGGLE = (1 << (6 + (n ^ 1))) | ~(1 << (6 + n));
+		    	*pPORTFIO_TOGGLE = (1 << 7) | (1 << 8);
 		    	*pTIMER_ENABLE = TIMEN0;
 		    	break;
 	}
