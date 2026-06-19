@@ -17,12 +17,12 @@ void Init_Flags(void)
 	temp++;
     *pPORTF_FER = 0x0000;
     *pPORTF_FER = 0x0000;
-    //*pPORTF_FER &= ~(1<<6); //debug led
+    *pPORTF_FER &= ~(1<<6); //debug led
     *pPORTF_FER |= (1 << 2) | (1 << 3); // PF2 & PF3 for UART1 RX/TX
 
     // set PORTF direction register
     *pPORTFIO_DIR = 0x1FC0;
-    //*pPORTFIO_DIR |= (1<<6); //debug led
+    *pPORTFIO_DIR |= (1<<6); //debug led
         
    	// set PORTF input enable register
     *pPORTFIO_INEN = 0x005C;
@@ -137,7 +137,7 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
-	*pSIC_IAR1 = 0xff3ffff; // Set UART1 RX interrupt priority to 3
+	*pSIC_IAR1 = 0xff3fffff; // Set UART1 RX interrupt priority to 3
 	*pSIC_IAR2 = 0xffffffff;
 	*pSIC_IAR3 = 0xffffffff;
 
@@ -145,7 +145,7 @@ void Init_Interrupts(void)
 	// Sport0 RX ISR -> IVG 9
 	//UART1 ISR -> IVG10
 	register_handler(ik_ivg9, Sport0_RX_ISR);
-	register_handler(ik_ivg10, UART1_ISR);
+	//register_handler(ik_ivg10, UART1_ISR);
 
 	// enable Sport0 RX and UART1 interrupts
 	*pSIC_IMASK = 0x00002020;
@@ -192,13 +192,13 @@ void initUART(void)
     ssync();
     *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
     ssync();
-    *pUART1_IER = ERBFI | ETBEI;
+   *pUART1_IER = ERBFI | ETBEI;
     ssync();
 
-    *pDMA11_START_ADDR = (void*)tx_buffer;
+   /* *pDMA11_START_ADDR = (void*)tx_buffer;
     *pDMA11_X_COUNT = 50;
     *pDMA11_X_MODIFY = 1;
-    *pDMA11_CONFIG = 0;
+    *pDMA11_CONFIG = 0;*/
 
 }
 

@@ -1,9 +1,6 @@
 #include "Talkthrough.h"
 
-volatile uint8_t state;
-volatile uint8_t j;
-volatile uint8_t data;
-uint8_t rx_buffer[50];
+
 void coefRX(uint8_t temp)
 {
 	switch(state) {
@@ -34,7 +31,7 @@ void coefRX(uint8_t temp)
 	    		data=1;
 	    		state=0;
 	    		j=0;
-	    		getText();
+	    		//getText();
 	    	}
 	        j = (j + 1) % sizeof(rx_buffer);
 	        break;
@@ -42,9 +39,7 @@ void coefRX(uint8_t temp)
 	}
 }
 
-uint8_t tx_buffer[50];
-volatile uint8_t tx_index;
-volatile int tx_len;
+
 void fillTXAndSend(void)
 {
 

@@ -98,6 +98,14 @@ int fsk_samples1[512];
 int fsk_samples2[512];
 
 
+volatile uint8_t state;
+volatile uint8_t j;
+volatile uint8_t data;
+uint8_t rx_buffer[50];
+
+uint8_t tx_buffer[50];
+volatile uint8_t tx_index;
+volatile int tx_len;
 
 
 
@@ -128,11 +136,21 @@ void main(void)
 {
 	Init_Flags();
 	Audio_Reset();
+		Init_Sport0();
+		Init_DMA();
+		Init_Interrupts();
+		Enable_DMA_Sport0();
+	   initUART();  // Nothing else before this
+	   *pPORTFIO_SET = (0 << 6);
+	    while(1);
+	/*Audio_Reset();
 	Init_Sport0();
 	Init_DMA();
 	Init_Interrupts();
 	Enable_DMA_Sport0();
+	*pPORTFIO_TOGGLE |= (1 << 6);
 	initUART();
+	*pPORTFIO_TOGGLE |= (1 << 6);
 	//startRpiScript();
 	//getText();
 	alpha = 0.2;
@@ -151,7 +169,16 @@ void main(void)
 	proc_string = string = string1;
 	proc_enc = enc = enc1;
 	proc_fsk_samples = fsk_samples = fsk_samples1;
+
+	state = 0;
+	j = 0;
+	data = 0;
+	memset(rx_buffer, 0, sizeof(rx_buffer));
+	memset(tx_buffer, 0, sizeof(tx_buffer));
+
+
 	fillTXAndSend();
+	*pPORTFIO_TOGGLE |= (1 << 6);
 	getText();
 
 	while(1){
@@ -226,6 +253,6 @@ void main(void)
 			    }
 
 
-	}
+	}*/
 }
 
