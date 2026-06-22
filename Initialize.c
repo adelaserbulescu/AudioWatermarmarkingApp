@@ -1,5 +1,5 @@
 #include "Talkthrough.h"
-//#include <string.h>
+#include <string.h>
 
 
 #define SCLK_HZ 100000000UL
@@ -65,7 +65,9 @@ void Init_Sport0(void)
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync	
 //	*pSPORT0_RCR1 = RFSR | LRFS | RCKFE | IRFS | IRCLK;
 	*pSPORT0_RCR1 = RFSR | RCKFE;
+	ssync();
 	*pSPORT0_RCR2 = SLEN_24 | RSFSE;
+	ssync();
 //	*pSPORT0_RCLKDIV = 0x0013;
 //	*pSPORT0_RFSDIV = 0x001F;
 	
@@ -75,7 +77,9 @@ void Init_Sport0(void)
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync
 //	*pSPORT0_TCR1 = TFSR | LTFS | TCKFE | ITFS | ITCLK;
 	*pSPORT0_TCR1 = TFSR | TCKFE;
+	ssync();
 	*pSPORT0_TCR2 = SLEN_24 | TSFSE;
+	ssync();
 
 //	*pSPORT0_TCLKDIV = 0x0013;
 //	*pSPORT0_TFSDIV = 0x001F;
@@ -129,7 +133,7 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
-uint8_t tx_buffer[5];
+uint8_t tx_buffer[12];
 void initUART(void)
 {
     // Enable UART1
@@ -151,14 +155,14 @@ void initUART(void)
     ssync();
 
     *pDMA11_START_ADDR = (void*)tx_buffer;
-    *pDMA11_X_COUNT = 5;
+    *pDMA11_X_COUNT = 12;
     *pDMA11_X_MODIFY = 1;
     *pDMA11_CONFIG = 0;
 
     *pDMA10_CONFIG = 0;
 }
 
-void initTIM0()
+/*void initTIM0()
 {
 	*pTIMER_DISABLE = TIMDIS0;
 	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
@@ -168,7 +172,7 @@ void initTIM0()
 	//*pTIMER_ENABLE = TIMEN0;
 	//ssync();
 
-}
+}*/
 
 
 //--------------------------------------------------------------------------//
@@ -180,26 +184,31 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
+	ssync();
 	*pSIC_IAR1 = 0xff3fffff;
-	*pSIC_IAR2 = 0xffff5fff;
+	ssync();
+	*pSIC_IAR2 = 0xffffffff;
+	ssync();
 	*pSIC_IAR3 = 0xffffffff;
+	ssync();
 
 	// assign ISRs to interrupt vectors
 	// Sport0 RX ISR -> IVG 9
-	register_handler(ik_ivg12, TIM0_ISR);
+	//register_handler(ik_ivg12, TIM0_ISR);
 	register_handler(ik_ivg10, UART1_RX_ISR);
 	register_handler(ik_ivg9, Sport0_RX_ISR);
 
 	// enable Sport0 RX interrupt
-	*pSIC_IMASK = 0x00082020;
+	*pSIC_IMASK = 0x00002020;
+	ssync();
 }
 
-/*char text[1024];
+char text[1024];
 int len;
 
 void getText(void)
 {
-	strcpy(text, "dsplabs");
+	strcpy(text, (const char) rx_buffer);
 	len = strlen(text);
 }
 
@@ -210,7 +219,7 @@ void procFirstTwoChars(void)
 	encodeMessage();
 	fsk(50, 2000);
 
-}*/
+}
 
 
 

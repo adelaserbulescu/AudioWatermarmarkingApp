@@ -1,6 +1,6 @@
 #include "Talkthrough.h"
 
-void fillTX(uint8_t n)
+void fillTX()
 {
 	while(!(*pUART1_LSR & THRE));
     if((*pDMA11_IRQ_STATUS & DMA_RUN) == 0) {
@@ -8,11 +8,17 @@ void fillTX(uint8_t n)
         tx_buffer[1] = 0xBB;
         tx_buffer[2] = 0xCC;
         tx_buffer[3] = 0xDD;
-        tx_buffer[4] = n;
+        tx_buffer[4] = (uint8_t) 'd';
+        tx_buffer[5] = (uint8_t) 's';
+        tx_buffer[6] = (uint8_t) 'p';
+        tx_buffer[7] = (uint8_t) 'l';
+        tx_buffer[8] = (uint8_t) 'a';
+        tx_buffer[9] = (uint8_t) 'b';
+        tx_buffer[10] = (uint8_t) 's';
 
         // Reload descriptor registers before re-enabling
         *pDMA11_START_ADDR = (void*)tx_buffer;
-        *pDMA11_X_COUNT    = 5;
+        *pDMA11_X_COUNT    = 12;
         *pDMA11_X_MODIFY   = 1;
         ssync();
         *pDMA11_CONFIG = DMAEN | FLOW_STOP | WDSIZE_8 | DI_EN;
@@ -21,6 +27,8 @@ void fillTX(uint8_t n)
 }
 
 volatile uint8_t frame_state;
+volatile char rx_buffer[8];
+volatile uint8_t rx_index;
 
 void readRX(uint8_t n)
 {
@@ -47,7 +55,8 @@ void readRX(uint8_t n)
 		    	break;
 		    case 4:
 		    	frame_state = 0;
-		    	*pTIMER_ENABLE = TIMEN0;
+		    	rx_buffer[rx_index] = n;
+		    	rx_index++;
 		    	break;
 	}
 }
