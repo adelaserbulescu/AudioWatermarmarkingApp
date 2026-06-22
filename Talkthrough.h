@@ -69,7 +69,7 @@ extern int index;
 extern int flag;
 
 extern double alpha;
-extern char text[];
+/*extern char text[];
 extern int len;
 
 extern char *string;
@@ -80,14 +80,19 @@ extern char string2[2];
 extern int *enc;
 extern int *proc_enc;
 extern int enc1[16];
-extern int enc2[16];
+extern int enc2[16];*/
 
 extern int *fsk_samples;
 extern int *proc_fsk_samples;
 extern int fsk_samples1[512];
 extern int fsk_samples2[512];
 
-extern int text_index;
+//extern int text_index;
+
+extern uint8_t tx_buffer[5];
+
+extern volatile uint8_t state;
+extern volatile uint8_t frame_state;
 
 
 
@@ -107,6 +112,8 @@ void Process_Data(void);
 
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
+EX_INTERRUPT_HANDLER(UART1_RX_ISR);
+EX_INTERRUPT_HANDLER(TIM0_ISR);
 
 //FFT
 void FFT(short int dir, long m, int *x, int *y);
@@ -114,12 +121,16 @@ void FFT(short int dir, long m, int *x, int *y);
 //Initialize Buffer Pointers
 void initBuffers(void);
 
-void getText(void);
+//void getText(void);
 
-void procFirstTwoChars(void);
+//void procFirstTwoChars(void);
 
-void encodeMessage(void);
+//void encodeMessage(void);
 
-void fsk(int f1, int f2);
+void fsk(uint8_t state, int f1, int f2);
+
+void fillTX(uint8_t n);
+
+void readRX(uint8_t n);
 
 #endif //__Talkthrough_DEFINED

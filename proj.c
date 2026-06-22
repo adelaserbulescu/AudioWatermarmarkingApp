@@ -82,15 +82,15 @@ int *outRight;
 int *procOutLeft;
 int *procOutRight;
 
-char *string;
-char *proc_string;
-char string1[2];
-char string2[2];
+//char *string;
+//char *proc_string;
+//char string1[2];
+//char string2[2];
 
-int *enc;
-int *proc_enc;
-int enc1[16];
-int enc2[16];
+//int *enc;
+//int *proc_enc;
+//int enc1[16];
+//int enc2[16];
 
 int *fsk_samples;
 int *proc_fsk_samples;
@@ -130,10 +130,13 @@ void main(void)
 	Audio_Reset();
 	Init_Sport0();
 	Init_DMA();
+	initUART();
+	initTIM0();
 	Init_Interrupts();
+	sti(EVT_IVG9 | EVT_IVG10 | EVT_IVG12);
 	Enable_DMA_Sport0();
-	getText();
-	alpha = 0.0001;
+	//getText();
+	alpha = 0.5;
 
 
 	procLeftR = inLeftR = Buffer1LeftR;
@@ -146,11 +149,12 @@ void main(void)
 
 	flag = 1;
 
-	proc_string = string = string1;
-	proc_enc = enc = enc1;
+	//proc_string = string = string1;
+	//proc_enc = enc = enc1;
 	proc_fsk_samples = fsk_samples = fsk_samples1;
+	fillTX(1);
 
-	procFirstTwoChars();
+	//procFirstTwoChars();
 
 	while(1){
 		if(index == 511) {
@@ -174,11 +178,11 @@ void main(void)
 
 				proc_fsk_samples = fsk_samples2;
 
-				string = string1;
-				enc = enc1;
+				//string = string1;
+				//enc = enc1;
 
-				proc_string = string2;
-				proc_enc = enc2;
+				//proc_string = string2;
+				//proc_enc = enc2;
 			}
 
 			else {
@@ -201,16 +205,16 @@ void main(void)
 
 				proc_fsk_samples = fsk_samples1;
 
-				string = string2;
-				enc = enc2;
+				//string = string2;
+				//enc = enc2;
 
-				proc_string = string1;
-				proc_enc = enc1;
+				//proc_string = string1;
+				//proc_enc = enc1;
 			}
-			text_index = (text_index + 1) % len;
-			strncpy(proc_string, text + 2 * text_index, 2);
-			encodeMessage();
-			fsk(50, 2000);
+			//text_index = (text_index + 1) % len;
+			//strncpy(proc_string, text + 2 * text_index, 2);
+			//encodeMessage();
+			fsk(state, 10, 2000);
 			FFT(1, 1, procLeftR, procLeftI);
 			FFT(1, 1, procRightR, procRightI);
 			FFT(-1, 1, procLeftR, procLeftI);

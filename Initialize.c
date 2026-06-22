@@ -1,6 +1,11 @@
 #include "Talkthrough.h"
-#include <string.h>
+//#include <string.h>
 
+
+#define SCLK_HZ 100000000UL
+#define PERIOD0 2
+#define TIMER_PERIOD0 (SCLK_HZ * PERIOD0)
+#define TIMER_WIDTH0 (TIMER_PERIOD0 / 2)
 /*****************************************************************************
  Function:	Init_Flags													
 																		
@@ -124,6 +129,48 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
+uint8_t tx_buffer[5];
+void initUART(void)
+{
+    // Enable UART1
+    *pUART1_GCTL = UCEN;
+    ssync();
+
+    // Set baud rate
+    *pUART1_LCR = DLAB;
+    ssync();
+    *pUART1_DLH = 0x02;
+    ssync();
+    *pUART1_DLL = 0x8B;
+    ssync();
+    *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
+    ssync();
+    *pUART1_MCR = LOOP_ENA;
+    ssync();
+    *pUART1_IER = ERBFI | ETBEI;
+    ssync();
+
+    *pDMA11_START_ADDR = (void*)tx_buffer;
+    *pDMA11_X_COUNT = 5;
+    *pDMA11_X_MODIFY = 1;
+    *pDMA11_CONFIG = 0;
+
+    *pDMA10_CONFIG = 0;
+}
+
+void initTIM0()
+{
+	*pTIMER_DISABLE = TIMDIS0;
+	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
+	*pTIMER0_PERIOD = TIMER_PERIOD0;
+	*pTIMER0_WIDTH = TIMER_WIDTH0;
+	ssync();
+	//*pTIMER_ENABLE = TIMEN0;
+	//ssync();
+
+}
+
+
 //--------------------------------------------------------------------------//
 // Function:	Init_Interrupts												//
 //																			//
@@ -133,19 +180,21 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
-	*pSIC_IAR1 = 0xffffffff;
-	*pSIC_IAR2 = 0xffffffff;
+	*pSIC_IAR1 = 0xff3fffff;
+	*pSIC_IAR2 = 0xffff5fff;
 	*pSIC_IAR3 = 0xffffffff;
 
 	// assign ISRs to interrupt vectors
 	// Sport0 RX ISR -> IVG 9
+	register_handler(ik_ivg12, TIM0_ISR);
+	register_handler(ik_ivg10, UART1_RX_ISR);
 	register_handler(ik_ivg9, Sport0_RX_ISR);
 
 	// enable Sport0 RX interrupt
-	*pSIC_IMASK = 0x00000020;
+	*pSIC_IMASK = 0x00082020;
 }
 
-char text[1024];
+/*char text[1024];
 int len;
 
 void getText(void)
@@ -161,7 +210,7 @@ void procFirstTwoChars(void)
 	encodeMessage();
 	fsk(50, 2000);
 
-}
+}*/
 
 
 
