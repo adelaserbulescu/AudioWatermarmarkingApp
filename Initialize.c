@@ -133,7 +133,7 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
-uint8_t tx_buffer[12];
+char tx_buffer[11];
 void initUART(void)
 {
     // Enable UART1
@@ -151,15 +151,30 @@ void initUART(void)
     ssync();
     *pUART1_MCR = LOOP_ENA;
     ssync();
-    *pUART1_IER = ERBFI | ETBEI;
+    *pUART1_IER = ERBFI;
+    ssync();
+
+    *pDMA10_START_ADDR = (void*)rx_buffer;
+    ssync();
+    *pDMA10_X_COUNT = 7;
+    ssync();
+    *pDMA10_X_MODIFY = 1;
+    ssync();
+    *pDMA10_CONFIG = WDSIZE_8 | DI_EN;
+    ssync();
+
+        // Enable DMA10
+    *pDMA10_CONFIG = (*pDMA10_CONFIG | DMAEN);
     ssync();
 
     *pDMA11_START_ADDR = (void*)tx_buffer;
-    *pDMA11_X_COUNT = 12;
+    ssync();
+    *pDMA11_X_COUNT = 11;
+    ssync();
     *pDMA11_X_MODIFY = 1;
+    ssync();
     *pDMA11_CONFIG = 0;
-
-    *pDMA10_CONFIG = 0;
+    ssync();
 }
 
 /*void initTIM0()
@@ -208,7 +223,10 @@ int len;
 
 void getText(void)
 {
-	strcpy(text, (const char) rx_buffer);
+	if(rx_index < 7) {
+	        rx_buffer[rx_index] = '\0';  // Add null terminator
+	    }
+	strcpy(text, (const char *)rx_buffer);
 	len = strlen(text);
 }
 

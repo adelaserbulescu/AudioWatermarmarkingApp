@@ -89,12 +89,15 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
-extern uint8_t tx_buffer[12];
+extern char tx_buffer[11];
 extern volatile char rx_buffer[8];
-extern volatile uint8_t rx_index;
+extern volatile int rx_index;
 
-extern volatile uint8_t state;
-extern volatile uint8_t frame_state;
+extern volatile int frame_state;
+extern volatile char received_bytes[11];
+extern volatile int received_bytes_index;
+extern volatile int uart_isr_count;
+extern volatile int error_condition_hit;
 
 
 
@@ -134,6 +137,6 @@ void fsk(int f1, int f2);
 
 void fillTX(void);
 
-void readRX(uint8_t n);
+void readRX(char n);
 
 #endif //__Talkthrough_DEFINED

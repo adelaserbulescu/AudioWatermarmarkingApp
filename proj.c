@@ -131,8 +131,8 @@ void main(void)
 	Audio_Reset();
 	Init_Sport0();
 	Init_DMA();
-	initUART();
 	Init_Interrupts();
+	initUART();
 	Enable_DMA_Sport0();
 	sti(EVT_IVG9 | EVT_IVG10);
 
@@ -153,6 +153,7 @@ void main(void)
 	proc_enc = enc = enc1;
 	proc_fsk_samples = fsk_samples = fsk_samples1;
 	fillTX();
+	for(int i = 0; i < 500000; i++);
 
 	getText();
 

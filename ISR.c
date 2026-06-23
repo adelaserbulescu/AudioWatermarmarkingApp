@@ -36,17 +36,23 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 		fillTX(state);
 }*/
 
-volatile uint8_t state;
+volatile char received_bytes[11];
+volatile int received_bytes_index;
+volatile int uart_isr_count = 0;
+volatile int error_condition_hit;
 EX_INTERRUPT_HANDLER(UART1_RX_ISR)
 {
+	uart_isr_count++;
 	if(*pUART1_LSR & (OE | PE |FE | BI)) {
-			volatile uint8_t dummy = *pUART1_RBR;
+		    error_condition_hit++;
+			volatile char dummy = *pUART1_RBR;
 			frame_state = 0;  // reset state machine
 			return;
 		}
 		if(*pUART1_LSR & DR)
 		{
-			uint8_t rx = *pUART1_RBR;
+			char rx = *pUART1_RBR;
+			received_bytes[received_bytes_index++] = rx;
 		    readRX(rx);
 		}
 }
