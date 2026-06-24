@@ -3,7 +3,7 @@
 
 
 #define SCLK_HZ 100000000UL
-#define PERIOD0 2
+#define PERIOD0 1
 #define TIMER_PERIOD0 (SCLK_HZ * PERIOD0)
 #define TIMER_WIDTH0 (TIMER_PERIOD0 / 2)
 /*****************************************************************************
@@ -43,7 +43,7 @@ void Audio_Reset(void)
 {
 	int i;
 	// give some time for reset to take affect
-    for(i = 0; i< delay;i++){};
+    for(i = 0; i< delay; i++){};
  	
     // set port f set register
     *pPORTFIO_SET = PF12;
@@ -133,7 +133,8 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
-char tx_buffer[11];
+char tx_buffer[25];
+volatile char rx_buffer[8];
 void initUART(void)
 {
     // Enable UART1
@@ -143,20 +144,23 @@ void initUART(void)
     // Set baud rate
     *pUART1_LCR = DLAB;
     ssync();
-    *pUART1_DLH = 0x02;
+    *pUART1_DLH = 0x00;
     ssync();
-    *pUART1_DLL = 0x8B;
+    *pUART1_DLL = 0x6d;
     ssync();
     *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
     ssync();
     *pUART1_MCR = LOOP_ENA;
     ssync();
-    *pUART1_IER = ERBFI;
-    ssync();
 
-    *pDMA10_START_ADDR = (void*)rx_buffer;
+
+	*pUART1_IER = ETBEI | ERBFI;
+	ssync();
+
+
+   *pDMA10_START_ADDR = (void*)rx_buffer;
     ssync();
-    *pDMA10_X_COUNT = 7;
+    *pDMA10_X_COUNT = 8;
     ssync();
     *pDMA10_X_MODIFY = 1;
     ssync();
@@ -164,30 +168,30 @@ void initUART(void)
     ssync();
 
         // Enable DMA10
-    *pDMA10_CONFIG = (*pDMA10_CONFIG | DMAEN);
+    *pDMA10_CONFIG |= DMAEN;
     ssync();
 
-    *pDMA11_START_ADDR = (void*)tx_buffer;
+   *pDMA11_START_ADDR = (void*)tx_buffer;
     ssync();
-    *pDMA11_X_COUNT = 11;
+    *pDMA11_X_COUNT = 25;
     ssync();
     *pDMA11_X_MODIFY = 1;
     ssync();
-    *pDMA11_CONFIG = 0;
+    *pDMA11_CONFIG = SYNC;
     ssync();
 }
 
-/*void initTIM0()
+void initTIM0()
 {
 	*pTIMER_DISABLE = TIMDIS0;
 	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
 	*pTIMER0_PERIOD = TIMER_PERIOD0;
 	*pTIMER0_WIDTH = TIMER_WIDTH0;
 	ssync();
-	//*pTIMER_ENABLE = TIMEN0;
-	//ssync();
+	*pTIMER_ENABLE = TIMEN0;
+	ssync();
 
-}*/
+}
 
 
 //--------------------------------------------------------------------------//
@@ -202,7 +206,7 @@ void Init_Interrupts(void)
 	ssync();
 	*pSIC_IAR1 = 0xff3fffff;
 	ssync();
-	*pSIC_IAR2 = 0xffffffff;
+	*pSIC_IAR2 = 0xffffFfff;
 	ssync();
 	*pSIC_IAR3 = 0xffffffff;
 	ssync();
@@ -223,10 +227,42 @@ int len;
 
 void getText(void)
 {
-	if(rx_index < 7) {
-	        rx_buffer[rx_index] = '\0';  // Add null terminator
+
+	/*rx_index = 0;
+	frame_state = 0;
+
+	    // Wait and poll for RX data
+	    volatile int poll_count = 0;
+	    while(poll_count < 1000000) {
+	        uint8_t lsr = *pUART1_LSR;
+
+	        if(lsr & DR) {  // Data Ready
+	            uint8_t rx = *pUART1_RBR;
+
+	            // Simple test - just store first few bytes
+	            if(rx_index < 7) {
+	                rx_buffer[rx_index++] = rx;
+	            }
+	        }
+	        poll_count++;
 	    }
-	strcpy(text, (const char *)rx_buffer);
+
+	    sti(EVT_IVG9 | EVT_IVG10);  // Re-enable interrupts
+
+	    if(rx_index > 0) {
+	        rx_buffer[rx_index] = '\0';
+	    } else {
+	        rx_buffer[0] = 'X';  // No data received
+	        rx_buffer[1] = '\0';
+	    }
+
+	    strcpy(text, (const char *)rx_buffer);
+	    len = strlen(text);*/
+
+	if(received_bytes_index < 20) {
+	        received_bytes[received_bytes_index] = '\0';
+	    }
+	strcpy(text, (const char *)received_bytes);
 	len = strlen(text);
 }
 
@@ -235,8 +271,17 @@ void procFirstTwoChars(void)
 {
 	strncpy(proc_string, text, 2);
 	encodeMessage();
-	fsk(50, 2000);
+	fsk(100, 2000);
 
+}
+void delayTIM0(void)
+{
+	initTIM0();
+	while(!(*pTIMER_STATUS & TIMIL0));
+	*pTIMER_STATUS = TIMIL0;
+	ssync();
+	*pTIMER_DISABLE = TIMDIS0;
+	ssync();
 }
 
 

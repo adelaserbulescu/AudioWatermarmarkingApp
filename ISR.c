@@ -1,4 +1,5 @@
 #include "Talkthrough.h"
+#include <string.h>
 
 //--------------------------------------------------------------------------//
 // Function:	Sport0_RX_ISR												//
@@ -36,10 +37,11 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 		fillTX(state);
 }*/
 
-volatile char received_bytes[11];
-volatile int received_bytes_index;
+volatile char received_bytes[25];
+volatile int received_bytes_index = 0;
 volatile int uart_isr_count = 0;
 volatile int error_condition_hit;
+volatile int stop_wait;
 EX_INTERRUPT_HANDLER(UART1_RX_ISR)
 {
 	uart_isr_count++;
@@ -49,12 +51,14 @@ EX_INTERRUPT_HANDLER(UART1_RX_ISR)
 			frame_state = 0;  // reset state machine
 			return;
 		}
-		if(*pUART1_LSR & DR)
-		{
+	;
+	while(!(*pUART1_LSR & DR));
 			char rx = *pUART1_RBR;
 			received_bytes[received_bytes_index++] = rx;
 		    readRX(rx);
-		}
+		    return;
+
+
 }
 
 	

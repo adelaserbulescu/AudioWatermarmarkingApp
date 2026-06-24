@@ -89,12 +89,12 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
-extern char tx_buffer[11];
+extern char tx_buffer[25];
 extern volatile char rx_buffer[8];
 extern volatile int rx_index;
 
 extern volatile int frame_state;
-extern volatile char received_bytes[11];
+extern volatile char received_bytes[25];
 extern volatile int received_bytes_index;
 extern volatile int uart_isr_count;
 extern volatile int error_condition_hit;
@@ -112,6 +112,8 @@ void Init_DMA(void);
 void initUART(void);
 void Init_Interrupts(void);
 void Enable_DMA_Sport0(void);
+void initTIM0(void);
+void delayTIM0(void);
 
 // in file Process_data.c
 void Process_Data(void);
