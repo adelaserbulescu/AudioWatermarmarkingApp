@@ -89,15 +89,21 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
-extern char tx_buffer[11];
+extern char tx_buffer[25];
 extern volatile char rx_buffer[8];
 extern volatile int rx_index;
 
 extern volatile int frame_state;
-extern volatile char received_bytes[11];
+extern volatile char received_bytes[25];
 extern volatile int received_bytes_index;
 extern volatile int uart_isr_count;
 extern volatile int error_condition_hit;
+extern enum TimerMode {
+	POLL,
+	INTERRUPT,
+	NONE
+};
+extern enum TimerMode mode;
 
 
 
@@ -112,6 +118,8 @@ void Init_DMA(void);
 void initUART(void);
 void Init_Interrupts(void);
 void Enable_DMA_Sport0(void);
+void initTIM0(void);
+void delayTIM0(void);
 
 // in file Process_data.c
 void Process_Data(void);
@@ -119,7 +127,7 @@ void Process_Data(void);
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
 EX_INTERRUPT_HANDLER(UART1_RX_ISR);
-//EX_INTERRUPT_HANDLER(TIM0_ISR);
+EX_INTERRUPT_HANDLER(TIM0_ISR);
 
 //FFT
 void FFT(short int dir, long m, int *x, int *y);

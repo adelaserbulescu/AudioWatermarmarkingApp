@@ -131,12 +131,27 @@ void main(void)
 	Audio_Reset();
 	Init_Sport0();
 	Init_DMA();
-	Init_Interrupts();
 	initUART();
-	Enable_DMA_Sport0();
-	sti(EVT_IVG9 | EVT_IVG10);
 
-	alpha = 0.5;
+
+
+
+	Init_Interrupts();
+	//cli();
+	delayTIM0();
+
+	delayTIM0();
+	//for(volatile int i = 0; i < 100000; i++);
+	fillTX();
+	//sti(EVT_IVG12);
+
+
+
+
+	Enable_DMA_Sport0();
+
+
+	alpha = 0.2;
 
 
 	procLeftR = inLeftR = Buffer1LeftR;
@@ -152,8 +167,12 @@ void main(void)
 	proc_string = string = string1;
 	proc_enc = enc = enc1;
 	proc_fsk_samples = fsk_samples = fsk_samples1;
-	fillTX();
-	for(int i = 0; i < 500000; i++);
+
+
+
+
+
+
 
 	getText();
 
@@ -217,7 +236,7 @@ void main(void)
 			text_index = (text_index + 1) % len;
 			strncpy(proc_string, text + 2 * text_index, 2);
 			encodeMessage();
-			fsk(10, 2000);
+			fsk(50, 2000);
 			FFT(1, 1, procLeftR, procLeftI);
 			FFT(1, 1, procRightR, procRightI);
 			FFT(-1, 1, procLeftR, procLeftI);
@@ -225,7 +244,7 @@ void main(void)
 			copy();
 			flag = -flag;
 		}
-
+		sti(EVT_IVG9);
 	}
 }
 
