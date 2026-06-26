@@ -61,7 +61,7 @@ void fillTX()
 }
 
 
-volatile int rx_index;
+volatile int rx_index = 0;
 volatile int frame_state;
 
 void readRX(char n)

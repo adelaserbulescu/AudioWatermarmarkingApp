@@ -3,7 +3,7 @@
 
 
 #define SCLK_HZ 100000000UL
-#define PERIOD0 0.1
+#define PERIOD0 1
 #define TIMER_PERIOD0 (SCLK_HZ * PERIOD0)
 #define TIMER_WIDTH0 (TIMER_PERIOD0 / 2)
 /*****************************************************************************
@@ -150,15 +150,15 @@ void initUART(void)
     ssync();
     *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
     ssync();
-    *pUART1_MCR = LOOP_ENA;
-    ssync();
+    //*pUART1_MCR = LOOP_ENA;
+    //ssync();
 
 
-	*pUART1_IER = ETBEI | ERBFI;
+	*pUART1_IER = ERBFI | ETBEI;
 	ssync();
 
 
-   *pDMA10_START_ADDR = (void*)rx_buffer;
+   /**pDMA10_START_ADDR = (void*)rx_buffer;
     ssync();
     *pDMA10_X_COUNT = 8;
     ssync();
@@ -171,14 +171,14 @@ void initUART(void)
     *pDMA10_CONFIG |= DMAEN;
     ssync();
 
-   *pDMA11_START_ADDR = (void*)tx_buffer;
+   /**pDMA11_START_ADDR = (void*)tx_buffer;
     ssync();
     *pDMA11_X_COUNT = 25;
     ssync();
     *pDMA11_X_MODIFY = 1;
     ssync();
     *pDMA11_CONFIG = SYNC;
-    ssync();
+    ssync();*/
 }
 
 enum TimerMode mode = NONE;

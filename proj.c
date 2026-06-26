@@ -140,10 +140,14 @@ void main(void)
 	//cli();
 	delayTIM0();
 
-	delayTIM0();
-	//for(volatile int i = 0; i < 100000; i++);
-	fillTX();
+	//delayTIM0();
+	//sti(EVT_IVG10);
+	while(uart_isr_count < 8);
+
+
+	//fillTX();
 	//sti(EVT_IVG12);
+	//while(!uart_isr_count);
 
 
 
