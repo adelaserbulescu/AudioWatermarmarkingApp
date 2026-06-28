@@ -1,5 +1,11 @@
 #include "Talkthrough.h"
+#include <string.h>
 
+
+#define SCLK_HZ 100000000UL
+#define PERIOD0 1
+#define TIMER_PERIOD0 (SCLK_HZ * PERIOD0)
+#define TIMER_WIDTH0 (TIMER_PERIOD0 / 2)
 /*****************************************************************************
  Function:	Init_Flags													
 																		
@@ -37,7 +43,7 @@ void Audio_Reset(void)
 {
 	int i;
 	// give some time for reset to take affect
-    for(i = 0; i< delay;i++){};
+    for(i = 0; i< delay; i++){};
  	
     // set port f set register
     *pPORTFIO_SET = PF12;
@@ -48,28 +54,32 @@ void Audio_Reset(void)
 // Function:	Init_Sport0													//
 //																			//
 // Description:	Configure Sport0 for I2S mode, to transmit/receive data 	//
-//				to/from the ADC/DAC.Configure Sport for external clocks and //
+//				to/from the ADC/DAC.Configure Sport for al clocks and //
 //				frame syncs.												//
 //--------------------------------------------------------------------------//
 void Init_Sport0(void)
 {
 	// Sport0 receive configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync	
 //	*pSPORT0_RCR1 = RFSR | LRFS | RCKFE | IRFS | IRCLK;
 	*pSPORT0_RCR1 = RFSR | RCKFE;
+	ssync();
 	*pSPORT0_RCR2 = SLEN_24 | RSFSE;
+	ssync();
 //	*pSPORT0_RCLKDIV = 0x0013;
 //	*pSPORT0_RFSDIV = 0x001F;
 	
 	// Sport0 transmit configuration
-	// External CLK, External Frame sync, MSB first, Active Low
+	// al CLK, al Frame sync, MSB first, Active Low
 	// 24-bit data, Secondary side enable, Stereo frame sync enable
 // Users of ADSP-BF537 EZ-KIT Board Rev 1.0 must enable the internal clock and frame sync
 //	*pSPORT0_TCR1 = TFSR | LTFS | TCKFE | ITFS | ITCLK;
 	*pSPORT0_TCR1 = TFSR | TCKFE;
+	ssync();
 	*pSPORT0_TCR2 = SLEN_24 | TSFSE;
+	ssync();
 
 //	*pSPORT0_TCLKDIV = 0x0013;
 //	*pSPORT0_TFSDIV = 0x001F;
@@ -123,6 +133,73 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
+char tx_buffer[25];
+volatile char rx_buffer[8];
+void initUART(void)
+{
+    // Enable UART1
+    *pUART1_GCTL = UCEN;
+    ssync();
+
+    // Set baud rate
+    *pUART1_LCR = DLAB;
+    ssync();
+    *pUART1_DLH = 0x00;
+    ssync();
+    *pUART1_DLL = 0x6d;
+    ssync();
+    *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
+    ssync();
+    //*pUART1_MCR = LOOP_ENA;
+    //ssync();
+
+
+	*pUART1_IER = ERBFI | ETBEI;
+	ssync();
+
+
+   /**pDMA10_START_ADDR = (void*)rx_buffer;
+    ssync();
+    *pDMA10_X_COUNT = 8;
+    ssync();
+    *pDMA10_X_MODIFY = 1;
+    ssync();
+    *pDMA10_CONFIG = WDSIZE_8 | DI_EN;
+    ssync();
+
+        // Enable DMA10
+    *pDMA10_CONFIG |= DMAEN;
+    ssync();
+
+   /**pDMA11_START_ADDR = (void*)tx_buffer;
+    ssync();
+    *pDMA11_X_COUNT = 25;
+    ssync();
+    *pDMA11_X_MODIFY = 1;
+    ssync();
+    *pDMA11_CONFIG = SYNC;
+    ssync();*/
+}
+
+enum TimerMode mode = NONE;
+void initTIM0()
+{
+	if(mode == NONE) mode = POLL;
+	else {
+		mode = INTERRUPT;
+		*pSIC_IMASK |= (1 << 19);
+	}
+	*pTIMER_DISABLE = TIMDIS0;
+	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
+	*pTIMER0_PERIOD = TIMER_PERIOD0;
+	*pTIMER0_WIDTH = TIMER_WIDTH0;
+	ssync();
+	*pTIMER_ENABLE = TIMEN0;
+	ssync();
+
+}
+
+
 //--------------------------------------------------------------------------//
 // Function:	Init_Interrupts												//
 //																			//
@@ -132,33 +209,94 @@ void Init_Interrupts(void)
 {
 	// Set Sport0 RX (DMA3) interrupt priority to 2 = IVG9 
 	*pSIC_IAR0 = 0xff2fffff;
-	*pSIC_IAR1 = 0xffffffff;
-	*pSIC_IAR2 = 0xffffffff;
+	ssync();
+	*pSIC_IAR1 = 0xff3fffff;
+	ssync();
+	*pSIC_IAR2 = 0xffff5fff;
+	ssync();
 	*pSIC_IAR3 = 0xffffffff;
+	ssync();
 
 	// assign ISRs to interrupt vectors
 	// Sport0 RX ISR -> IVG 9
+	register_handler(ik_ivg12, TIM0_ISR);
+	register_handler(ik_ivg10, UART1_RX_ISR);
 	register_handler(ik_ivg9, Sport0_RX_ISR);
 
 	// enable Sport0 RX interrupt
-	*pSIC_IMASK = 0x00000020;
+	*pSIC_IMASK = 0x00002020;
+	ssync();
 }
 
-int inputBuff1R[512][2];
-int inputBuff1I[512][2];
-int *inPointerR;
-int *inPointerI;
-int outputBuff1R[512][2];
-int outputBuff1I[512][2];
-int *outPointerR;
-int *outPointerI;
+char text[1024];
+int len;
 
-void initPointers() {
-	*inPointerR = inputBuff1R;
-	*inPointerI = inputBuff1I;
-	*outPointerR = outputBuff1R;
-	*outPointerI = outputBuff1I;
+void getText(void)
+{
+
+	/*rx_index = 0;
+	frame_state = 0;
+
+	    // Wait and poll for RX data
+	    volatile int poll_count = 0;
+	    while(poll_count < 1000000) {
+	        uint8_t lsr = *pUART1_LSR;
+
+	        if(lsr & DR) {  // Data Ready
+	            uint8_t rx = *pUART1_RBR;
+
+	            // Simple test - just store first few bytes
+	            if(rx_index < 7) {
+	                rx_buffer[rx_index++] = rx;
+	            }
+	        }
+	        poll_count++;
+	    }
+
+	    sti(EVT_IVG9 | EVT_IVG10);  // Re-enable interrupts
+
+	    if(rx_index > 0) {
+	        rx_buffer[rx_index] = '\0';
+	    } else {
+	        rx_buffer[0] = 'X';  // No data received
+	        rx_buffer[1] = '\0';
+	    }
+
+	    strcpy(text, (const char *)rx_buffer);
+	    len = strlen(text);*/
+
+	/*if(received_bytes_index < 20) {
+	        received_bytes[received_bytes_index] = '\0';
+	    }*/
+	strcpy(text, (const char *)received_bytes);
+	len = strlen(text);
 }
+
+
+void procFirstTwoChars(void)
+{
+	strncpy(proc_string, text, 2);
+	encodeMessage();
+	fsk(50, 2000);
+
+}
+
+void delayTIM0(void)
+{
+	initTIM0();
+	if(mode == POLL) {
+		while(!(*pTIMER_STATUS & TIMIL0));
+		*pTIMER_STATUS = TIMIL0;
+		ssync();
+		*pTIMER_DISABLE = TIMDIS0;
+		ssync();
+	}
+	else return;
+}
+
+
+
+
 
 
 	
