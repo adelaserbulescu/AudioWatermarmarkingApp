@@ -1,62 +1,36 @@
 #include "Talkthrough.h"
+#include <math.h>
+#include <string.h>
 
 
-
+volatile int fill_tx_called = 0;
 void fillTX()
 {
-	/*int timeout = 0;
-	while(!(*pUART1_LSR & TEMT) && timeout < 0xfff) timeout++;*/
+	if((*pDMA11_IRQ_STATUS & DMA_RUN) == 0) {
+		fill_tx_called = (fill_tx_called + 1) % 512;
+		for(int i = 0; i < 4; i++) {
+			tx_buffer[i].sof_value = tx_buffer[i].original_right = tx_buffer[i].original_left = tx_buffer[i].watermark = 0xAA + i + (i << 4);
 
-	//for(volatile int i = 0; i < 100000; i++);
-    if((*pDMA11_IRQ_STATUS & DMA_RUN) == 0) {
-    	int i = 0;
-    	for(int idx = 0; i < 3; idx ++){
-            tx_buffer[i++] = 0xAA;
+		}
 
-            tx_buffer[i++] = 0xBB;
+		        // Fill samples directly in tx_buffer (no local array!)
+		for(int i = 0; i < 512; i++) {
+			tx_buffer[i + 4].original_left = procInLeft[i];
+		    tx_buffer[i + 4].original_right = procInRight[i];
+		    tx_buffer[i + 4].watermark = (int)floor((double)(procOutLeft[i] - (1 - alpha) * procInLeft[i]));
+		    tx_buffer[i + 4].sof_value = 0;
+		}
 
-            tx_buffer[i++] = 0xCC;
-
-            tx_buffer[i++] = 0xDD;
-
-            }
-
-        tx_buffer[i++] = 'd';
-
-        tx_buffer[i++] = 's';
-
-        tx_buffer[i++] = 'p';
-
-        tx_buffer[i++] = 'l';
-
-        tx_buffer[i++] = 'a';
-
-        tx_buffer[i++] = 'b';
-
-        tx_buffer[i++] = 's';
-
-        tx_buffer[i++] = '\n';
-
-
-
-        *pDMA11_START_ADDR = (void*)tx_buffer;
-        *pDMA11_X_COUNT = i;  // 19 total bytes
-        *pDMA11_X_MODIFY = 1;
-        ssync();
-
-        *pDMA11_CONFIG = DMAEN | FLOW_STOP | WDSIZE_8 | DI_EN;
-        ssync();
-
-        for(volatile int i = 0; i < 100000; i++);
-
-        /*timeout = 0;
-        while(!(*pUART1_LSR & TEMT) && timeout < 0xfff) timeout++;*/
-        //delayTIM0();
-
-
-
-
-    }
+	    // Send via DMA11
+	    *pDMA11_START_ADDR = (void*)tx_buffer;
+	    ssync();
+	    *pDMA11_X_COUNT = 516 * sizeof(struct SignalComparator);  // Total bytes to send
+	    ssync();
+	    *pDMA11_X_MODIFY = 1;
+	    ssync();
+	    *pDMA11_CONFIG = DMAEN | FLOW_STOP | WDSIZE_8 | DI_EN;
+	    ssync();
+	}
 
 }
 
@@ -68,31 +42,34 @@ void readRX(char n)
 {
 	switch(frame_state) {
 		    case 0:
-		    	if(n == 0xAA) {
+		    	if(n == -86) {
 		    		frame_state = 1;
 		    	}
 		    		break;
 		    case 1:
-		    	if(n == 0xBB) {
+		    	if(n == -69) {
 		    		frame_state = 2;
 		    	}
+		    	else frame_state = 0;
 
 	    		break;
 		    case 2:
-		    	if(n == 0xCC) {
+		    	if(n == -52) {
 		    		frame_state = 3;
 		    	}
+		    	else frame_state = 0;
 
-	    		break;
+	    	    break;
 		    case 3:
-		    	if(n == 0xDD) {
+		    	if(n == -35) {
 		    		frame_state = 4;
 		    	}
+		    	else frame_state = 0;
 
 	    		break;
 		    case 4:
-		    	frame_state = 0;
 		    	rx_buffer[rx_index++] = n;
-		    	return;
+		    	//frame_state = 0;
+		    	break;
 	}
 }

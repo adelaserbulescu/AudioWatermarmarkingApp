@@ -20,7 +20,7 @@ void Init_Flags(void)
 	temp = *pPORTF_FER;
 	temp++;
     *pPORTF_FER = 0x0000;
-    *pPORTF_FER = 0x0000;
+    *pPORTF_FER = 0x000c;
 
     // set PORTF direction register
     *pPORTFIO_DIR = 0x1FC0;
@@ -133,8 +133,9 @@ void Enable_DMA_Sport0(void)
 	*pSPORT0_RCR1 	= (*pSPORT0_RCR1 | RSPEN);
 }
 
-char tx_buffer[25];
-volatile char rx_buffer[8];
+
+
+struct SignalComparator tx_buffer[516];
 void initUART(void)
 {
     // Enable UART1
@@ -150,45 +151,25 @@ void initUART(void)
     ssync();
     *pUART1_LCR = 0x0003;   // 8 data bits, no parity, 1 stop bit
     ssync();
-    //*pUART1_MCR = LOOP_ENA;
-    //ssync();
 
 
 	*pUART1_IER = ERBFI | ETBEI;
 	ssync();
 
+	memset(&tx_buffer, 0, 517);
 
-   /**pDMA10_START_ADDR = (void*)rx_buffer;
+   *pDMA11_START_ADDR = (void*)tx_buffer;
     ssync();
-    *pDMA10_X_COUNT = 8;
-    ssync();
-    *pDMA10_X_MODIFY = 1;
-    ssync();
-    *pDMA10_CONFIG = WDSIZE_8 | DI_EN;
-    ssync();
-
-        // Enable DMA10
-    *pDMA10_CONFIG |= DMAEN;
-    ssync();
-
-   /**pDMA11_START_ADDR = (void*)tx_buffer;
-    ssync();
-    *pDMA11_X_COUNT = 25;
+    *pDMA11_X_COUNT = 516 * sizeof(struct SignalComparator);
     ssync();
     *pDMA11_X_MODIFY = 1;
     ssync();
     *pDMA11_CONFIG = SYNC;
-    ssync();*/
+    ssync();
 }
 
-enum TimerMode mode = NONE;
 void initTIM0()
 {
-	if(mode == NONE) mode = POLL;
-	else {
-		mode = INTERRUPT;
-		*pSIC_IMASK |= (1 << 19);
-	}
 	*pTIMER_DISABLE = TIMDIS0;
 	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
 	*pTIMER0_PERIOD = TIMER_PERIOD0;
@@ -233,42 +214,7 @@ int len;
 
 void getText(void)
 {
-
-	/*rx_index = 0;
-	frame_state = 0;
-
-	    // Wait and poll for RX data
-	    volatile int poll_count = 0;
-	    while(poll_count < 1000000) {
-	        uint8_t lsr = *pUART1_LSR;
-
-	        if(lsr & DR) {  // Data Ready
-	            uint8_t rx = *pUART1_RBR;
-
-	            // Simple test - just store first few bytes
-	            if(rx_index < 7) {
-	                rx_buffer[rx_index++] = rx;
-	            }
-	        }
-	        poll_count++;
-	    }
-
-	    sti(EVT_IVG9 | EVT_IVG10);  // Re-enable interrupts
-
-	    if(rx_index > 0) {
-	        rx_buffer[rx_index] = '\0';
-	    } else {
-	        rx_buffer[0] = 'X';  // No data received
-	        rx_buffer[1] = '\0';
-	    }
-
-	    strcpy(text, (const char *)rx_buffer);
-	    len = strlen(text);*/
-
-	/*if(received_bytes_index < 20) {
-	        received_bytes[received_bytes_index] = '\0';
-	    }*/
-	strcpy(text, (const char *)received_bytes);
+	strcpy(text, (const char *)rx_buffer);
 	len = strlen(text);
 }
 
@@ -284,14 +230,11 @@ void procFirstTwoChars(void)
 void delayTIM0(void)
 {
 	initTIM0();
-	if(mode == POLL) {
-		while(!(*pTIMER_STATUS & TIMIL0));
-		*pTIMER_STATUS = TIMIL0;
-		ssync();
-		*pTIMER_DISABLE = TIMDIS0;
-		ssync();
-	}
-	else return;
+	while(!(*pTIMER_STATUS & TIMIL0));
+	*pTIMER_STATUS = TIMIL0;
+	ssync();
+	*pTIMER_DISABLE = TIMDIS0;
+	ssync();
 }
 
 

@@ -27,6 +27,7 @@ Program Parameters:
 #include <ccblkfn.h>
 #include <limits.h>
 #include <sys/pll.h>
+#include <stddef.h>
 
 
 /*****************************************************************************
@@ -55,7 +56,7 @@ int iRxBuffer1[2];
 
 int flag;
 
-int Buffer1LeftR[512];
+/*int Buffer1LeftR[512];
 int Buffer1LeftI[512];
 int Buffer2LeftR[512];
 int Buffer2LeftI[512];
@@ -81,7 +82,7 @@ int outRight2[512];
 int *outLeft;
 int *outRight;
 int *procOutLeft;
-int *procOutRight;
+int *procOutRight;*/
 
 char *string;
 char *proc_string;
@@ -98,23 +99,36 @@ int *proc_fsk_samples;
 int fsk_samples1[512];
 int fsk_samples2[512];
 
+
 int string_flag;
 
 
 
 double alpha;
 
+ int *outLeft;
+ int *outRight;
+ int *inLeft;
+ int *inRight;
+ int *procOutLeft;
+ int *procOutRight;
+ int *procInLeft;
+ int *procInRight;
+ int outLeft1[512];
+ int outRight1[512];
+ int inLeft1[512];
+ int inRight1[512];
+ int outLeft2[512];
+ int outRight2[512];
+ int inLeft2[512];
+ int inRight2[512];
 
 
-void copy(void)
-{
-	for(int i = 0; i < 512; i++){
-		procOutLeft[i] = procLeftR[i];
-		procOutRight[i] = procRightR[i];
-	}
-
-	return;
-}
+ volatile int struct_size;
+ volatile int offset_left;
+ volatile int offset_right;
+ volatile int offset_watermark;
+ volatile int offset_sof;
 
 
 
@@ -128,6 +142,12 @@ void copy(void)
 //--------------------------------------------------------------------------//
 void main(void)
 {
+
+	  struct_size = sizeof(struct SignalComparator);
+	  offset_left = offsetof(struct SignalComparator, original_left);
+	  offset_right = offsetof(struct SignalComparator, original_right);
+	  offset_watermark = offsetof(struct SignalComparator, watermark);
+	  offset_sof = offsetof(struct SignalComparator, sof_value);
 	pll_set_system_vco(24, 0, 0x0200);
     pll_set_system_clocks(0, 0x6);
 	Init_Flags();
@@ -144,7 +164,7 @@ void main(void)
 
 	//delayTIM0();
 	//sti(EVT_IVG10);
-	while(uart_isr_count < sizeof(rx_buffer) - 1);
+	while(uart_isr_count < sizeof(rx_buffer) + 3);
 
 
 	//fillTX();
@@ -154,21 +174,24 @@ void main(void)
 
 
 
-	Enable_DMA_Sport0();
+	//Enable_DMA_Sport0();
 
 
-	alpha = 0.2;
+	alpha = 0.1;
 
 
-	procLeftR = inLeftR = Buffer1LeftR;
+	/*procLeftR = inLeftR = Buffer1LeftR;
 	procLeftI = inLeftI = Buffer1LeftI;
 	procRightR = inRightR = Buffer1RightR;
-	procRightI = inRightI = Buffer1RightI;
-	outLeft = outLeft1;
-	outRight = outRight1;
+	procRightI = inRightI = Buffer1RightI;*/
+	procOutLeft = outLeft = outLeft1;
+	procOutRight = outRight = outRight1;
+
+	procInLeft = inLeft = inLeft1;
+	procInRight = inRight = inRight1;
 
 
-	flag = 1;
+	flag = -1;
 
 	proc_string = string = string1;
 	proc_enc = enc = enc1;
@@ -183,11 +206,13 @@ void main(void)
 	getText();
 
 	procFirstTwoChars();
+	Enable_DMA_Sport0();
 
 	while(1){
 		if(index == 511) {
+
 			if(flag == 1) {
-				inLeftR = Buffer1LeftR;
+				/*inLeftR = Buffer1LeftR;
 				inLeftI = Buffer1LeftI;
 				inRightR = Buffer1RightR;
 				inRightI = Buffer1RightI;
@@ -195,7 +220,12 @@ void main(void)
 				procLeftR = Buffer2LeftR;
 				procLeftI = Buffer2LeftI;
 				procRightR = Buffer2RightR;
-				procRightI = Buffer2RightI;
+				procRightI = Buffer2RightI;*/
+				//fillTX();
+				inLeft = inLeft1;
+				inRight = inRight1;
+				procInLeft = inLeft2;
+				procInRight = inRight2;
 
 				outLeft = outLeft1;
 				outRight = outRight1;
@@ -214,7 +244,7 @@ void main(void)
 			}
 
 			else {
-				inLeftR = Buffer2LeftR;
+				/*inLeftR = Buffer2LeftR;
 				inLeftI = Buffer2LeftI;
 				inRightR = Buffer2RightR;
 				inRightI = Buffer2RightI;
@@ -222,7 +252,12 @@ void main(void)
 				procLeftR = Buffer1LeftR;
 				procLeftI = Buffer1LeftI;
 				procRightR = Buffer1RightR;
-				procRightI = Buffer1RightI;
+				procRightI = Buffer1RightI;*/
+				//fillTX();
+				inLeft = inLeft2;
+				inRight = inRight2;
+				procInLeft = inLeft1;
+				procInRight = inRight1;
 
 				outLeft = outLeft2;
 				outRight = outRight2;
@@ -236,20 +271,26 @@ void main(void)
 				string = string2;
 				enc = enc2;
 
+
 				proc_string = string1;
 				proc_enc = enc1;
+
 			}
+
 			text_index = (text_index + 1) % len;
 			strncpy(proc_string, text + 2 * text_index, 2);
 			encodeMessage();
 			fsk(50, 2000);
-			FFT(1, 1, procLeftR, procLeftI);
+
+			/*FFT(1, 1, procLeftR, procLeftI);
 			FFT(1, 1, procRightR, procRightI);
 			FFT(-1, 1, procLeftR, procLeftI);
-			FFT(-1, 1, procRightR, procRightI);
-			copy();
+			FFT(-1, 1, procRightR, procRightI);*/
+			//copy();
+
 			flag = -flag;
 		}
+		fillTX();
 		sti(EVT_IVG9);
 	}
 }

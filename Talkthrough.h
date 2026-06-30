@@ -37,7 +37,7 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
-extern int Buffer1LeftR[512];
+/*extern int Buffer1LeftR[512];
 extern int Buffer1LeftI[512];
 extern int Buffer2LeftR[512];
 extern int Buffer2LeftI[512];
@@ -63,7 +63,12 @@ extern int outRight2[512];
 extern int *outLeft;
 extern int *outRight;
 extern int *procOutLeft;
-extern int *procOutRight;
+extern int *procOutRight;*/
+
+extern  int *outLeft;
+extern  int *outRight;
+extern  int *inLeft;
+extern  int *inRight;
 
 extern int index;
 extern int flag;
@@ -89,21 +94,41 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
-extern char tx_buffer[25];
+extern int eof_flag;
 extern volatile char rx_buffer[8];
 extern volatile int rx_index;
+extern volatile int uart_isr_count;
+extern  int *procOutLeft;
+extern  int *procOutRight;
+extern  int *procInLeft;
+extern  int *procInRight;
+extern  int outLeft1[512];
+extern  int outRight1[512];
+extern  int inLeft1[512];
+extern  int inRight1[512];
+extern  int outLeft2[512];
+extern  int outRight2[512];
+extern  int inLeft2[512];
+extern  int inRight2[512];
+
+
+extern struct SignalComparator {
+	int sof_value;
+	int original_left;
+	int original_right;
+	int watermark;
+
+}tx_buffer[516];
+
 
 extern volatile int frame_state;
-extern volatile char received_bytes[25];
-extern volatile int received_bytes_index;
-extern volatile int uart_isr_count;
-extern volatile int error_condition_hit;
-extern enum TimerMode {
-	POLL,
-	INTERRUPT,
-	NONE
-};
-extern enum TimerMode mode;
+
+extern volatile int struct_size;
+extern volatile int offset_left;
+extern volatile int offset_right;
+extern volatile int offset_watermark;
+extern volatile int offset_sof;
+extern volatile int fill_tx_called;
 
 
 

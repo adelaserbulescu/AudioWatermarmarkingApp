@@ -22,7 +22,7 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 	iChannel0RightIn = iRxBuffer1[INTERNAL_ADC_R0];
 	
 	// call function that contains user code
-	Process_Data();				
+	Process_Data();
 
 	// copy processed data from variables into dma output buffer
 	iTxBuffer1[INTERNAL_DAC_L0] = iChannel0LeftOut;
@@ -33,7 +33,7 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 EX_INTERRUPT_HANDLER(TIM0_ISR)
 {
 	*pTIMER_STATUS = TIMIL0;
-	if(received_bytes[received_bytes_index+1] == '\n') {
+	if(rx_index == sizeof(rx_buffer) - 1) {
 		*pUART1_IER = 0;
 		ssync();
 		return;
@@ -41,42 +41,20 @@ EX_INTERRUPT_HANDLER(TIM0_ISR)
 
 }
 
-volatile char received_bytes[25];
-volatile int received_bytes_index = 0;
-volatile int uart_isr_count = 0;
-volatile int error_condition_hit;
-volatile int stop_wait;
-volatile int oe;
-volatile int pe;
-volatile int fe;
-volatile int bi;
+volatile char rx_buffer[8];
+volatile int uart_isr_count;
 EX_INTERRUPT_HANDLER(UART1_RX_ISR)
 {
-
-	if(!uart_isr_count) for(int i = 0; i < 1000000; i++);
-	if(uart_isr_count == sizeof(rx_buffer))sti(EVT_IVG12);
-	volatile int lsr = *pUART1_LSR;
-
-
-	if(lsr & (OE | PE |FE | BI)) {
-		oe = lsr & OE;
-		    pe = lsr & PE;
-		    fe = lsr & FE;
-		    bi = lsr & BI;
-		    error_condition_hit++;
+	uart_isr_count++;
+	if(*pUART1_LSR & (OE | PE |FE | BI)) {
 			volatile char dummy = *pUART1_RBR;
 			frame_state = 0;  // reset state machine
-			uart_isr_count++;
 			return;
 		}
 
 	while(!(*pUART1_LSR & DR));
     char rx = *pUART1_RBR;
-    //rx += 94;
-    if(rx == 0xff) return;
-    //readRX(rx);
-	received_bytes[received_bytes_index++] = rx;
-	uart_isr_count++;
+    readRX(rx);
 
 }
 
