@@ -42,20 +42,14 @@ def read_frame():
         # Check if ALL 4 fields match the expected sync value
         expected = sync_values[sync_count]
         if all((v & 0xFF) == expected for v in values):
-            print(f"  ✓ Sync byte {hex(expected)} found!")
             sync_count += 1
         else:
-            print(f"  ✗ Not a sync struct, resetting")
             sync_count = 0
-    
-    print("All 4 sync structs found! Reading payload...")
     
     # Now read the 512 data structs
     payload = b''
     for i in range(512):
         payload += ser.read(16)
-    
-    print(f"Payload complete: {len(payload)} bytes")
     return payload
 
 def parse_payload(payload):
