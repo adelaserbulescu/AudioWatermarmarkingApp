@@ -30,17 +30,6 @@ EX_INTERRUPT_HANDLER(Sport0_RX_ISR)
 
 }
 
-EX_INTERRUPT_HANDLER(TIM0_ISR)
-{
-	*pTIMER_STATUS = TIMIL0;
-	if(rx_index == sizeof(rx_buffer) - 1) {
-		*pUART1_IER = 0;
-		ssync();
-		return;
-	}
-
-}
-
 volatile char rx_buffer[8];
 volatile int uart_isr_count;
 EX_INTERRUPT_HANDLER(UART1_RX_ISR)

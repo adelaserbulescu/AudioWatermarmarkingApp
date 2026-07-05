@@ -37,34 +37,6 @@ extern int iChannel0RightOut;
 extern int iRxBuffer1[];
 extern int iTxBuffer1[];
 
-/*extern int Buffer1LeftR[512];
-extern int Buffer1LeftI[512];
-extern int Buffer2LeftR[512];
-extern int Buffer2LeftI[512];
-
-extern int Buffer1RightR[512];
-extern int Buffer1RightI[512];
-extern int Buffer2RightR[512];
-extern int Buffer2RightI[512];
-
-extern int *inLeftR;
-extern int *inLeftI;
-extern int *inRightR;
-extern int *inRightI;
-extern int *procLeftR;
-extern int *procLeftI;
-extern int *procRightR;
-extern int *procRightI;
-
-extern int outLeft1[512];
-extern int outLeft2[512];
-extern int outRight1[512];
-extern int outRight2[512];
-extern int *outLeft;
-extern int *outRight;
-extern int *procOutLeft;
-extern int *procOutRight;*/
-
 extern  int *outLeft;
 extern  int *outRight;
 extern  int *inLeft;
@@ -94,7 +66,6 @@ extern int fsk_samples2[512];
 
 extern int text_index;
 
-extern int eof_flag;
 extern volatile char rx_buffer[8];
 extern volatile int rx_index;
 extern volatile int uart_isr_count;
@@ -123,13 +94,6 @@ extern struct SignalComparator {
 
 extern volatile int frame_state;
 
-extern volatile int struct_size;
-extern volatile int offset_left;
-extern volatile int offset_right;
-extern volatile int offset_watermark;
-extern volatile int offset_sof;
-extern volatile int fill_tx_called;
-
 
 
 //--------------------------------------------------------------------------//
@@ -143,8 +107,6 @@ void Init_DMA(void);
 void initUART(void);
 void Init_Interrupts(void);
 void Enable_DMA_Sport0(void);
-void initTIM0(void);
-void delayTIM0(void);
 
 // in file Process_data.c
 void Process_Data(void);
@@ -152,10 +114,7 @@ void Process_Data(void);
 // in file ISRs.c
 EX_INTERRUPT_HANDLER(Sport0_RX_ISR);
 EX_INTERRUPT_HANDLER(UART1_RX_ISR);
-EX_INTERRUPT_HANDLER(TIM0_ISR);
 
-//FFT
-void FFT(short int dir, long m, int *x, int *y);
 
 //Initialize Buffer Pointers
 void initBuffers(void);

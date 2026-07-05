@@ -1,11 +1,6 @@
 #include "Talkthrough.h"
 #include <string.h>
 
-
-#define SCLK_HZ 100000000UL
-#define PERIOD0 1
-#define TIMER_PERIOD0 (SCLK_HZ * PERIOD0)
-#define TIMER_WIDTH0 (TIMER_PERIOD0 / 2)
 /*****************************************************************************
  Function:	Init_Flags													
 																		
@@ -168,18 +163,6 @@ void initUART(void)
     ssync();
 }
 
-void initTIM0()
-{
-	*pTIMER_DISABLE = TIMDIS0;
-	*pTIMER0_CONFIG = PERIOD_CNT | PWM_OUT | IRQ_ENA;
-	*pTIMER0_PERIOD = TIMER_PERIOD0;
-	*pTIMER0_WIDTH = TIMER_WIDTH0;
-	ssync();
-	*pTIMER_ENABLE = TIMEN0;
-	ssync();
-
-}
-
 
 //--------------------------------------------------------------------------//
 // Function:	Init_Interrupts												//
@@ -193,14 +176,13 @@ void Init_Interrupts(void)
 	ssync();
 	*pSIC_IAR1 = 0xff3fffff;
 	ssync();
-	*pSIC_IAR2 = 0xffff5fff;
+	*pSIC_IAR2 = 0xffffffff;
 	ssync();
 	*pSIC_IAR3 = 0xffffffff;
 	ssync();
 
 	// assign ISRs to interrupt vectors
 	// Sport0 RX ISR -> IVG 9
-	register_handler(ik_ivg12, TIM0_ISR);
 	register_handler(ik_ivg10, UART1_RX_ISR);
 	register_handler(ik_ivg9, Sport0_RX_ISR);
 
@@ -227,15 +209,6 @@ void procFirstTwoChars(void)
 
 }
 
-void delayTIM0(void)
-{
-	initTIM0();
-	while(!(*pTIMER_STATUS & TIMIL0));
-	*pTIMER_STATUS = TIMIL0;
-	ssync();
-	*pTIMER_DISABLE = TIMDIS0;
-	ssync();
-}
 
 
 

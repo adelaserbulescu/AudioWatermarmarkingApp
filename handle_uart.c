@@ -17,7 +17,7 @@ void fillTX()
 		for(int i = 0; i < 512; i++) {
 			tx_buffer[i + 4].original_left = procInLeft[i];
 		    tx_buffer[i + 4].original_right = procInRight[i];
-		    tx_buffer[i + 4].watermark = (int)floor((double)(procOutLeft[i] - (1 - alpha) * procInLeft[i]));
+		    tx_buffer[i + 4].watermark = (int)floor((double)(procOutLeft[i] - (1 - alpha) * procInLeft[i])/alpha);
 		    tx_buffer[i + 4].sof_value = 0;
 		}
 
@@ -69,7 +69,6 @@ void readRX(char n)
 	    		break;
 		    case 4:
 		    	rx_buffer[rx_index++] = n;
-		    	//frame_state = 0;
 		    	break;
 	}
 }
