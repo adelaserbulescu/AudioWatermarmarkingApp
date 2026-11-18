@@ -48,21 +48,25 @@ extern int flag;
 extern double alpha;
 extern char text[];
 extern int len;
+extern char *recovered_text;
 
 extern char *string;
 extern char *proc_string;
 extern char string1[2];
 extern char string2[2];
+extern char *decoded_string;
 
 extern int *enc;
 extern int *proc_enc;
 extern int enc1[16];
 extern int enc2[16];
+extern int *dec;
 
 extern int *fsk_samples;
 extern int *proc_fsk_samples;
 extern int fsk_samples1[512];
 extern int fsk_samples2[512];
+extern int *symbol_real, *symbol_imag;
 
 extern int text_index;
 
@@ -125,10 +129,18 @@ void procFirstTwoChars(void);
 
 void encodeMessage(void);
 
+void decodeMessage(void);
+
+void recoverText(void);
+
 void fsk(int f1, int f2);
+
+void fsk_demod(int f1, int f2);
 
 void fillTX(void);
 
 void readRX(char n);
+
+void FFT(short int dir, long m, int *x, int *y);
 
 #endif //__Talkthrough_DEFINED

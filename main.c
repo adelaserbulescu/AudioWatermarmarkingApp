@@ -184,6 +184,7 @@ void main(void)
 			strncpy(proc_string, text + 2 * text_index, 2);
 			encodeMessage();
 			fsk(50, 2000);
+			recoverText();
 			flag = -flag;
 		}
 		fillTX();
