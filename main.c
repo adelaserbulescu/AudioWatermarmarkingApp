@@ -183,7 +183,7 @@ void main(void)
 			text_index = (text_index + 1) % len;
 			strncpy(proc_string, text + 2 * text_index, 2);
 			encodeMessage();
-			fsk(50, 2000);
+			fsk(64, 192);
 			recoverText();
 			flag = -flag;
 		}

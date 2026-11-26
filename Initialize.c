@@ -205,7 +205,8 @@ void procFirstTwoChars(void)
 {
 	strncpy(proc_string, text, 2);
 	encodeMessage();
-	fsk(50, 2000);
+	fsk(64, 192);
+	recoverText();
 
 }
 

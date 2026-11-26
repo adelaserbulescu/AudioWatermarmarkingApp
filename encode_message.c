@@ -6,7 +6,7 @@ void encodeMessage(void) {
 	for(int i = 0; i < 2; i++) {
 		for(int k = 7; k >= 0; k--) {
 			int bit = ((proc_string[i]) & (1 << k)) ? 1 : 0; // Extract each bit from the character
-			proc_enc[i * 7 + 7 - k] = bit;
+			proc_enc[i * 8 + 7 - k] = bit;
 		}
 	}
 }
@@ -15,26 +15,33 @@ void encodeMessage(void) {
 char *decoded_string;
 
 void decodeMessage() {
-	decoded_string = (char*)malloc(sizeof(string));
-	for(int i = 0; i < 2; i++) {
-		int shift = 0;
-		for(int k = 7 * (i + 1); k >= 7 * i; k--) {
-		    decoded_string[i] +=  dec[i] << shift;
-		    shift++;
-		}
+	if (!dec) return;                                  // fsk_demod failed
+	decoded_string = (char*) calloc(3, 1);
+	if (!decoded_string) return;
+	for (int i = 0; i < 2; i++) {
+		char c = 0;
+	    for (int b = 0; b < 8; b++)
+	    	c = (c << 1) | (dec[i * 8 + b] & 1);// MSB first, like encodeMessage
+
+	    decoded_string[i] = c;
 	}
 }
 
-
-char *recovered_text;
-
-void recoverText() {
-	recovered_text = (char*) malloc(sizeof((char*)text));
-	if(strlen(recovered_text) == strlen(text))
-		return;
-	else {
-		fsk_demod(50, 2000);
-		decodeMessage();
-		strncpy(recovered_text + strlen(recovered_text), decoded_string, 2);
-	}
+char* recovered_text;
+static int rec_len = 0;
+void recoverText(void)
+{
+    if (recovered_text == NULL) {                      // allocate once
+        recovered_text = (char*) calloc(len + 3, 1);
+        if (!recovered_text) return;
+    }
+    if (rec_len >= len) return;
+    fsk_demod(64, 192);
+    decodeMessage();
+    if (decoded_string && dec) {
+        memcpy(recovered_text + rec_len, decoded_string, 2);
+        rec_len += 2;
+    }
+    free(decoded_string); decoded_string = NULL;
+    free(dec);            dec = NULL;
 }
